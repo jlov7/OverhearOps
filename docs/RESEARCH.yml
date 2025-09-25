@@ -1,36 +1,36 @@
 # curated references for OverhearOps research log
 - title: chatMessage resource (Microsoft Graph)
-  url: https://learn.microsoft.com/graph/api/resources/chatmessage?view=graph-rest-1.0
+  url: https://learn.microsoft.com/en-us/graph/api/resources/chatmessage?view=graph-rest-1.0
   date: 2024-10-02
-  why_it_matters: Defines Teams message schema our NDJSON mirrors.
+  why_it_matters: "Defines Teams message schema our NDJSON mirrors."
 - title: Teams messaging overview
-  url: https://learn.microsoft.com/graph/teams-messaging-overview
+  url: https://learn.microsoft.com/en-us/graph/teams-messaging-overview
   date: 2024-11-07
-  why_it_matters: Shapes adapter seam for future Graph swap.
-- title: Adaptive Cards v1.5 (Teams support/incompat notes)
-  url: https://learn.microsoft.com/microsoftteams/platform/task-modules-and-cards/cards/universal-actions-for-adaptive-cards/work-with-universal-actions-for-adaptive-cards
-  date: 2024-09-16
-  why_it_matters: Constrains UI components to Teams-supported features (≤1.5); note older-client caveat.
-- title: Durable execution (LangGraph)
-  url: https://docs.langchain.com/oss/python/langgraph/durable-execution
+  why_it_matters: "Shapes adapter seam and thread fields."
+- title: Adaptive Cards — Universal Actions (v1.5 note)
+  url: https://learn.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/universal-actions-for-adaptive-cards/work-with-universal-actions-for-adaptive-cards
+  date: 2025-05-01
+  why_it_matters: "Use ≤ v1.5; older Outlook/Teams clients may be incompatible."
+- title: LangGraph durable execution
+  url: https://langchain-ai.github.io/langgraph/concepts/durable_execution/
   date: 2025-09-02
-  why_it_matters: Checkpoints, resumability, deterministic design.
-- title: Persistence/Checkpointers (LangGraph)
+  why_it_matters: "Checkpoints, resumability, deterministic design."
+- title: LangGraph persistence & threads
   url: https://langchain-ai.github.io/langgraph/concepts/persistence/
   date: 2025-08-01
-  why_it_matters: SQLite/Postgres checkpointers; thread_id config.
+  why_it_matters: "SQLite checkpointer & thread semantics."
 - title: LangGraph 1.0 alpha blog
   url: https://blog.langchain.com/langchain-langchain-1-0-alpha-releases/
   date: 2025-09-02
   why_it_matters: 1.0 direction; durable runtime/streams.
-- title: OTLP exporter (OpenTelemetry Python)
+- title: OpenTelemetry Python OTLP exporter
   url: https://opentelemetry-python.readthedocs.io/en/latest/exporter/otlp/otlp.html
   date: 2025-06-24
-  why_it_matters: Standard exporter env vars.
+  why_it_matters: "Standard OTLP envs & exporter options."
 - title: Trace with OpenTelemetry (LangSmith)
   url: https://docs.smith.langchain.com/observability/how_to_guides/trace_with_opentelemetry
   date: 2025-03-26
-  why_it_matters: How to send OTEL traces to LangSmith.
+  why_it_matters: "Send OTEL traces to LangSmith."
 - title: OpenTelemetry → Langfuse
   url: https://langfuse.com/integrations/native/opentelemetry
   date: 2025-08-28
@@ -38,27 +38,31 @@
 - title: Overhearing LLM Agents (survey)
   url: https://arxiv.org/abs/2509.16325
   date: 2025-09-19
-  why_it_matters: Listen-first paradigm & best practices.
+  why_it_matters: "Listen-first paradigm and best practices."
 - title: AgentInit (team orchestration)
   url: https://arxiv.org/abs/2509.19236
   date: 2025-09-23
-  why_it_matters: Diversity+expertise improves collab & cost.
-- title: AgentSeer (Action/Component graphs)
-  url: https://arxiv.org/html/2509.04802v2
-  date: 2025-09-07
-  why_it_matters: Agent-level safety/observability.
+  why_it_matters: "Diversity + expertise for agent teams."
+- title: AgentSeer (Action & Component graphs)
+  url: https://arxiv.org/abs/2509.04802
+  date: 2025-09-05
+  why_it_matters: "Agent-level safety/observability via graphs."
 - title: Multi-Agent Defence Pipeline
   url: https://arxiv.org/abs/2509.14285
   date: 2025-09-16
-  why_it_matters: Coordinator+Guard; attack categories/evals.
-- title: ARE / Gaia-2 (event-driven evals)
+  why_it_matters: "Coordinator+Guard; attack categories/evals."
+- title: ARE / Gaia-2 (event-driven agent evals)
   url: https://arxiv.org/abs/2509.17158
   date: 2025-09-21
-  why_it_matters: Reproducible, time/event-driven scenarios and replays.
+  why_it_matters: "Asynchronous, time-driven scenarios & replay."
 - title: SWE-bench Verified
   url: https://openai.com/index/introducing-swe-bench-verified/
   date: 2025-02-24
-  why_it_matters: Optional coding demo target.
+  why_it_matters: "Optional mode C; credible coding demo target."
+- title: SWE-bench Pro (long-horizon benchmark)
+  url: https://arxiv.org/abs/2509.16941
+  date: 2025-09-21
+  why_it_matters: "Harder tasks; frontier models ≤ ~25% under standard scaffolds."
 - title: Cursor Agent Planning / To-dos
   url: https://cursor.com/docs/agent/planning
   date: 2025-07-03
@@ -67,10 +71,10 @@
   url: https://docs.astral.sh/uv/
   date: 2025-05-28
   why_it_matters: Fast, reproducible Python envs.
-- title: M365 Agents Toolkit / Playground
+- title: Microsoft 365 Agents Playground
   url: https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/debug-your-agents-playground
   date: 2025-05-30
-  why_it_matters: Future path to test bot/agent cards without a tenant.
+  why_it_matters: "Preview bot/agent cards without a tenant."
 - title: LangGraph GitHub Repository
   url: https://github.com/langchain-ai/langgraph
   date: 2025-01-15

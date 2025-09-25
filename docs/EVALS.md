@@ -6,7 +6,7 @@
 - **Judge alignment:** Measure agreement between multi-agent judge decision and human reviewer verdicts (≥80 %).
 - **Artefact completeness:** Ensure dry-run PR diff, Jira payload, and runbook note reference the winning plan and include blast-radius context.
 - **Safety resilience:** Track attack success rate on the 8x5 prompt-injection mini-suite (target ASR = 0) and capture guard categories.
-- **Span graph coverage:** Ensure span-derived action graphs include ≥7 nodes with linear chain across overhear→ship.
+- **Span graph coverage & invocation correctness:** Ensure span-derived action graphs include ≥7 nodes with linear chain across overhear→ship and parent→child edges match the LangGraph execution order.
 - **Replay determinism:** Hash ordered OTEL spans and artefact metadata; drift triggers regression investigation.
 
 ## Test surfaces

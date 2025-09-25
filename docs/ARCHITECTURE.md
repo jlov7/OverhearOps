@@ -52,6 +52,12 @@ class State(TypedDict, total=False):
 4. The service derives `graphs.json`, stores `artefacts.json`, and persists `hash.txt` (SHA-256 of span timeline) alongside the raw spans.
 5. Next.js UI fetches `/run/{id}` and `/runs/{id}/graphs.json`, displays verdict, ribbons, Cytoscape action graph, and the governance modal with replay hash + reproduce command.
 
+## Span model
+- `spanify(name)` decorates each LangGraph node, capturing `agent.role`, `overhearops.thread_id`, inferred branch identifiers, and approximate token flow in/out.
+- Parent span context is preserved so the action graph mirrors the runtime order and respects the branch-width cap from `OVERHEAROPS_BRANCH_WIDTH`.
+- `OVERHEAROPS_RUN_ID` pins the SQLite checkpointer thread and ensures spans land in `runs/{id}/spans.jsonl` for replay and downstream graphs.
+- Replay hashes run over ordered `(span_id, name, start, end)` tuples, guaranteeing deterministic verification alongside persisted artefacts.
+
 ## Deployment notes
 - Python 3.12 managed via `uv`; Node 20 for UI runtime.
 - Environment variables documented in `.env.example` (OTEL endpoint, DB path, thresholds).
@@ -59,7 +65,21 @@ class State(TypedDict, total=False):
 - Container-friendly: run `task dev` (starts collector via Docker Compose, backend via uvicorn, UI via npm).
 - Future integrations: Microsoft Graph adapter, LangSmith/Langfuse OTEL exporters, governance modal with span IDs.
 
+## Adapter seam
+```mermaid
+flowchart LR
+    UI[Next.js UI] -->|REST/WebSocket| API
+    Playground[Agents Playground] -->|Adaptive Card| API
+    API -- ADAPTER=demo --> Demo[NDJSON demo adapter]
+    API -- ADAPTER=graph --> Graph[Teams Graph stub]
+    API -- ADAPTER=playground --> Exporter[Plan card exporter]
+    Demo --> Threads[data/demo/threads]
+    Graph --> "(future) Microsoft Graph"
+```
+Runtime selection happens via the `ADAPTER` environment variable. `graph` mode validates credentials and otherwise raises a clear error, keeping the seam ready for future wiring whilst demo and playground remain credential-free.
+
 ## Governance & replay
 - Each run sets `OVERHEAROPS_RUN_ID`, enabling the file exporter to append spans and the service to calculate a replay hash.
 - The governance modal surfaces trace IDs, branch counts, and the reproduce command (`uv run apps/service/replay.py --thread ci_flake --seed 42`).
 - Determinism is enforced by hashing `(span_id, name, start_ts, end_ts)` and storing the value in `runs/{id}/hash.txt`.
+- The uncertainty gate implements an abstain policy: low-confidence verdicts prevent artefact shipment and surface a blocked banner in the UI.
