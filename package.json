@@ -1,0 +1,19 @@
+{
+  "name": "overhearops",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Workspace for OverhearOps demo UI",
+  "workspaces": [
+    "apps/ui"
+  ],
+  "scripts": {
+    "dev": "npm run --prefix apps/ui dev",
+    "build": "npm run --prefix apps/ui build",
+    "lint": "npm run --prefix apps/ui lint",
+    "test": "npm run --prefix apps/ui test"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  }
+}

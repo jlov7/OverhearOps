@@ -1,0 +1,2 @@
+web: uv run uvicorn apps.service.main:app --reload --port 8000
+ui:  bash -lc "cd apps/ui && npm i && npm run dev"

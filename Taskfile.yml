@@ -1,0 +1,20 @@
+version: "3"
+
+tasks:
+  dev:
+    cmds:
+      - docker compose -f infra/docker-compose.yaml up -d
+      - uv run honcho start -f Procfile.dev
+  test:
+    cmds:
+      - uv run pytest -q
+  lint:
+    cmds:
+      - uv run ruff check .
+      - uv run mypy .
+  replay:
+    cmds:
+      - uv run apps/service/replay.py --thread ci_flake --seed 42 --speed 1.0
+  obs-up:
+    cmds:
+      - docker compose -f infra/docker-compose.yaml up -d

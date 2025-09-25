@@ -1,0 +1,85 @@
+# curated references for OverhearOps research log
+- title: chatMessage resource (Microsoft Graph)
+  url: https://learn.microsoft.com/graph/api/resources/chatmessage?view=graph-rest-1.0
+  date: 2024-10-02
+  why_it_matters: Defines Teams message schema our NDJSON mirrors.
+- title: Teams messaging overview
+  url: https://learn.microsoft.com/graph/teams-messaging-overview
+  date: 2024-11-07
+  why_it_matters: Shapes adapter seam for future Graph swap.
+- title: Adaptive Cards v1.5 (Teams support/incompat notes)
+  url: https://learn.microsoft.com/microsoftteams/platform/task-modules-and-cards/cards/universal-actions-for-adaptive-cards/work-with-universal-actions-for-adaptive-cards
+  date: 2024-09-16
+  why_it_matters: Constrains UI components to Teams-supported features (≤1.5); note older-client caveat.
+- title: Durable execution (LangGraph)
+  url: https://docs.langchain.com/oss/python/langgraph/durable-execution
+  date: 2025-09-02
+  why_it_matters: Checkpoints, resumability, deterministic design.
+- title: Persistence/Checkpointers (LangGraph)
+  url: https://langchain-ai.github.io/langgraph/concepts/persistence/
+  date: 2025-08-01
+  why_it_matters: SQLite/Postgres checkpointers; thread_id config.
+- title: LangGraph 1.0 alpha blog
+  url: https://blog.langchain.com/langchain-langchain-1-0-alpha-releases/
+  date: 2025-09-02
+  why_it_matters: 1.0 direction; durable runtime/streams.
+- title: OTLP exporter (OpenTelemetry Python)
+  url: https://opentelemetry-python.readthedocs.io/en/latest/exporter/otlp/otlp.html
+  date: 2025-06-24
+  why_it_matters: Standard exporter env vars.
+- title: Trace with OpenTelemetry (LangSmith)
+  url: https://docs.smith.langchain.com/observability/how_to_guides/trace_with_opentelemetry
+  date: 2025-03-26
+  why_it_matters: How to send OTEL traces to LangSmith.
+- title: OpenTelemetry → Langfuse
+  url: https://langfuse.com/integrations/native/opentelemetry
+  date: 2025-08-28
+  why_it_matters: Alternative OTEL backend.
+- title: Overhearing LLM Agents (survey)
+  url: https://arxiv.org/abs/2509.16325
+  date: 2025-09-19
+  why_it_matters: Listen-first paradigm & best practices.
+- title: AgentInit (team orchestration)
+  url: https://arxiv.org/abs/2509.19236
+  date: 2025-09-23
+  why_it_matters: Diversity+expertise improves collab & cost.
+- title: AgentSeer (Action/Component graphs)
+  url: https://arxiv.org/html/2509.04802v2
+  date: 2025-09-07
+  why_it_matters: Agent-level safety/observability.
+- title: Multi-Agent Defence Pipeline
+  url: https://arxiv.org/abs/2509.14285
+  date: 2025-09-16
+  why_it_matters: Coordinator+Guard; attack categories/evals.
+- title: ARE / Gaia-2 (event-driven evals)
+  url: https://arxiv.org/abs/2509.17158
+  date: 2025-09-21
+  why_it_matters: Reproducible, time/event-driven scenarios and replays.
+- title: SWE-bench Verified
+  url: https://openai.com/index/introducing-swe-bench-verified/
+  date: 2025-02-24
+  why_it_matters: Optional coding demo target.
+- title: Cursor Agent Planning / To-dos
+  url: https://cursor.com/docs/agent/planning
+  date: 2025-07-03
+  why_it_matters: IDE agent planning best-practice.
+- title: uv — Python package manager
+  url: https://docs.astral.sh/uv/
+  date: 2025-05-28
+  why_it_matters: Fast, reproducible Python envs.
+- title: M365 Agents Toolkit / Playground
+  url: https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/debug-your-agents-playground
+  date: 2025-05-30
+  why_it_matters: Future path to test bot/agent cards without a tenant.
+- title: LangGraph GitHub Repository
+  url: https://github.com/langchain-ai/langgraph
+  date: 2025-01-15
+  why_it_matters: Reference implementation of LangGraph 1.0 APIs leveraged for the StateGraph.
+- title: Adaptive Card reference (Teams)
+  url: https://learn.microsoft.com/microsoftteams/platform/task-modules-and-cards/cards/cards-reference
+  date: 2024-05-05
+  why_it_matters: Component catalogue informing UI parity.
+- title: ARE / Gaia2 blog
+  url: https://huggingface.co/blog/gaia2
+  date: 2024-12-01
+  why_it_matters: Highlights time-based replay techniques mirrored by the deterministic scheduler.
