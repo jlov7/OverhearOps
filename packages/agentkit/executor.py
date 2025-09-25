@@ -5,6 +5,8 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from typing import Any
 
+from packages.obs.defence import run_defence
+
 
 def _render_pr_diff(plan: dict[str, Any]) -> str:
     plan_id = plan.get("id", "unknown")
@@ -47,23 +49,44 @@ def _render_jira(plan: dict[str, Any]) -> dict[str, Any]:
 def try_patch_or_issue(plan: dict[str, Any]) -> dict[str, Any]:
     """Produce artefacts for the chosen plan (stubbed for demo)."""
 
-    if not plan:
-        return {
-            "plan": {},
-            "pr_diff": "",
-            "jira": {},
-            "notes": ["No plan selected"],
-        }
+    safe_plan = plan if isinstance(plan, dict) else {}
+    steps = safe_plan.get("steps", [])
+    if not isinstance(steps, list):
+        steps = list(steps) if hasattr(steps, "__iter__") else []
+    signal = " ".join(
+        filter(
+            None,
+            [
+                safe_plan.get("title"),
+                safe_plan.get("hypothesis"),
+                *[step for step in steps if isinstance(step, str)],
+            ],
+        )
+    )
+    decision = run_defence(signal)
     notes = [
         "Team coverage: coordinator, fixer, critic, riskguard",
-        f"Confidence estimate: {plan.get('confidence', 0.0):.2f}",
+        f"Confidence estimate: {safe_plan.get('confidence', 0.0):.2f}",
+        f"Safety guard: {decision.justification}",
     ]
-    return {
-        "plan": plan,
-        "pr_diff": _render_pr_diff(plan),
-        "jira": _render_jira(plan),
+    if not safe_plan:
+        notes.append("No plan selected")
+    artefacts = {
+        "plan": safe_plan,
+        "pr_diff": "",
+        "jira": {},
         "notes": notes,
+        "safety": {
+            "allowed": decision.allowed,
+            "categories": decision.categories,
+            "score": decision.score,
+            "justification": decision.justification,
+        },
     }
+    if safe_plan and decision.allowed:
+        artefacts["pr_diff"] = _render_pr_diff(safe_plan)
+        artefacts["jira"] = _render_jira(safe_plan)
+    return artefacts
 
 
 __all__ = ["try_patch_or_issue"]

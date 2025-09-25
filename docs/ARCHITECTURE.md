@@ -40,17 +40,17 @@ class State(TypedDict, total=False):
 ## Components
 - **apps/service:** FastAPI app exposing health, WebSocket stream, `POST /run/{thread}` trigger, and `GET /runs/{id}` retrieval. Persists artefacts under `runs/` and pipes spans to OTEL.
 - **packages/agentkit:** LangGraph 1.0 StateGraph nodes (overhear intent detection, AgentInit-inspired team composer, planner, executor, judge, uncertainty gate).
-- **packages/obs:** Observability helpers (OTEL bootstrap, action-graph stub, defence heuristics) citing LangSmith/Langfuse integrations.
-- **apps/ui:** Next.js App Router UI mirroring Adaptive Cards ≤ v1.5. Streams Teams-like thread, triggers runs, and visualises verdict plus action graph JSON.
+- **packages/obs:** Observability helpers (OTEL bootstrap, dual exporter writing OTLP + local `spans.jsonl`, span-to-graph builder, defence heuristics) citing LangSmith/Langfuse integrations.
+- **apps/ui:** Next.js App Router UI mirroring Adaptive Cards <=1.5. Streams the Teams-style thread, renders Cytoscape span graph, ribbons, and governance modal.
 - **infra:** Docker Compose launching Jaeger and OTEL collector for local tracing.
 - **data/demo:** Teams-shaped NDJSON threads for deterministic replay.
 
 ## Data flow
 1. `apps/service/replay.py` replays NDJSON messages via WebSocket for demos and tests.
 2. FastAPI service stores latest message, invokes LangGraph with SQLite checkpointer for resumability.
-3. Nodes write spans through OTLP exporter; Jaeger displays traces. Action graph helper provides JSON fallback until span ingestion powers derived graphs.
-4. Final artefacts (dry-run PR diff, Jira payload, rationale) saved per run under `runs/{run_id}` for governance review and replay.
-5. Next.js UI fetches `/run/{id}` to display verdict, artefacts, and stored graph; thread view reuses WebSocket stream.
+3. Nodes emit spans via OTLP exporter and the file exporter, writing `runs/{run_id}/spans.jsonl` for replay + action/component graphs.
+4. The service derives `graphs.json`, stores `artefacts.json`, and persists `hash.txt` (SHA-256 of span timeline) alongside the raw spans.
+5. Next.js UI fetches `/run/{id}` and `/runs/{id}/graphs.json`, displays verdict, ribbons, Cytoscape action graph, and the governance modal with replay hash + reproduce command.
 
 ## Deployment notes
 - Python 3.12 managed via `uv`; Node 20 for UI runtime.
@@ -58,3 +58,8 @@ class State(TypedDict, total=False):
 - SQLite checkpointer default path `overhearops.db`; override with `OVERHEAROPS_DB` or env for tests.
 - Container-friendly: run `task dev` (starts collector via Docker Compose, backend via uvicorn, UI via npm).
 - Future integrations: Microsoft Graph adapter, LangSmith/Langfuse OTEL exporters, governance modal with span IDs.
+
+## Governance & replay
+- Each run sets `OVERHEAROPS_RUN_ID`, enabling the file exporter to append spans and the service to calculate a replay hash.
+- The governance modal surfaces trace IDs, branch counts, and the reproduce command (`uv run apps/service/replay.py --thread ci_flake --seed 42`).
+- Determinism is enforced by hashing `(span_id, name, start_ts, end_ts)` and storing the value in `runs/{id}/hash.txt`.

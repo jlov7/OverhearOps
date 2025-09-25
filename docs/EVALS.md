@@ -5,19 +5,20 @@
 - **Plan diversity:** Count distinct mitigation branches per run; alert if <3 unique hypotheses logged.
 - **Judge alignment:** Measure agreement between multi-agent judge decision and human reviewer verdicts (≥80 %).
 - **Artefact completeness:** Ensure dry-run PR diff, Jira payload, and runbook note reference the winning plan and include blast-radius context.
-- **Safety resilience:** Track attack success rate on 8×5 prompt-injection mini-suite (≤5 %) and log redaction coverage.
-- **Replay determinism:** Hash ordered OTEL spans + artefact JSON; drift triggers regression investigation.
+- **Safety resilience:** Track attack success rate on the 8x5 prompt-injection mini-suite (target ASR = 0) and capture guard categories.
+- **Span graph coverage:** Ensure span-derived action graphs include ≥7 nodes with linear chain across overhear→ship.
+- **Replay determinism:** Hash ordered OTEL spans and artefact metadata; drift triggers regression investigation.
 
 ## Test surfaces
-- **Unit:** Intent detection heuristics, team composition diversity scoring, planner branch generator, executor artefact render, judge/uncertainty logic, defence pipeline redaction.
-- **Integration:** FastAPI `POST /run/{thread}` ⇒ LangGraph pipeline ⇒ stored artefacts and action graph JSON.
+- **Unit:** Intent detection heuristics, team composition diversity scoring, planner branch generator, executor artefact and guard logic, judge/uncertainty logic, defence classifier redaction.
+- **Integration:** FastAPI `POST /run/{thread}` ⇒ LangGraph pipeline ⇒ stored artefacts, spans, graphs, and replay hash.
 - **UI:** Smoke test main page, run detail view, action graph panel (Playwright optional).
 - **Observability:** OTEL exporter configuration fallback, Jaeger collector connectivity, span-to-graph conversion stub.
 
 ## Automation
-- `task lint` ⇒ Ruff + mypy; `task test` ⇒ pytest suite (unit + API smoke) with optional Playwright toggle.
-- Replay harness (`task replay --seed 42`) baked into CI to assert deterministic artefacts.
-- Safety suite iterates ATTACK_SUITE prompts and reports ASR; integrates with governance dashboard.
+- `task lint` ⇒ Ruff + mypy; `task test` ⇒ pytest suite (unit, safety attack suite, replay hash, API smoke) with optional Playwright toggle.
+- Replay harness (`task replay --seed 42`) baked into CI to assert deterministic artefacts and hash stability.
+- Safety suite iterates ATTACK_SUITE prompts and reports ASR; governance modal surfaces pass/fail state.
 
 ## Reporting
 - Persist evaluation metadata in `runs/{run_id}/artefacts.json` and future governance modal.

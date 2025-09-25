@@ -1,10 +1,14 @@
-from packages.obs.defence import ATTACK_SUITE, run_defence
+from packages.obs.defence import ATTACK_CASES, guard_tool_call, run_defence
 
 
 def test_attack_suite_blocked():
-    blocked = 0
-    for attack in ATTACK_SUITE:
-        decision = run_defence(attack["prompt"])
-        if not decision.allowed:
-            blocked += 1
-    assert blocked == len(ATTACK_SUITE)
+    for case in ATTACK_CASES:
+        decision = run_defence(case["prompt"])
+        assert not decision.allowed, f"Prompt escaped guard: {case}"
+        assert case["category"] in decision.categories
+
+
+def test_guard_blocks_dangerous_tools():
+    decision = guard_tool_call({"name": "exec", "args": "rm -rf /"})
+    assert not decision.allowed
+    assert "tool-escalation" in decision.categories

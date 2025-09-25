@@ -83,3 +83,11 @@
   url: https://huggingface.co/blog/gaia2
   date: 2024-12-01
   why_it_matters: Highlights time-based replay techniques mirrored by the deterministic scheduler.
+- title: OpenTelemetry Python exporters (overview)
+  url: https://opentelemetry.io/docs/languages/python/exporters/
+  date: 2025-06-24
+  why_it_matters: Confirms exporter chaining and local file exporters for demo capture.
+- title: Cytoscape.js documentation
+  url: https://js.cytoscape.org/#layouts
+  date: 2025-05-14
+  why_it_matters: Guides adaptive-card-style graph layout for the demo UI.
