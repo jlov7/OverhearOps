@@ -55,7 +55,7 @@ When a Teams thread starts looping on a flaky CI failure, OverhearOps quietly **
 
 ---
 
-## 60‑second talk track (speaker notes)
+## 60‑second talk track
 
 **Builder’s opener (10s).**
 “I kept seeing Teams threads re‑litigate the same fixes. I wanted an agent that **listens first**, then only joins when it can genuinely reduce toil.”
@@ -70,9 +70,6 @@ When a Teams thread starts looping on a flaky CI failure, OverhearOps quietly **
 “This is a reusable pattern: *listen → weigh → work → write*. It slots into Teams, respects Adaptive Card constraints, and routes traces to whichever observability stack you already use. The result is fewer noisy threads, faster triage, and audit‑ready artefacts clients can trust.”
 
 ---
-
-## Optional “backup” explainer (one‑slide, keep hidden)
-
 ```
 OverhearOps flow
  ┌──────────┐   ┌──────────────┐   ┌────────┐   ┌──────────┐   ┌─────────┐
@@ -114,32 +111,3 @@ OverhearOps flow
 * Flip to **playground mode** and paste the **Plan Card** into Agents Playground.
 * Narrate the abstain policy and safety banner.
 
----
-
-## Day‑two follow‑up email (paste & send)
-
-> **Subject:** OverhearOps demo – replay, traces, and next steps
->
-> Thanks for the time today. As shown, OverhearOps listens to Teams‑shaped threads, forms a micro‑team, explores a few plans, and ships a dry-run PR/Jira only when confident. Every run is traceable (OTEL), replayable (seed/hash), and safety-scanned (Coordinator+Guard).
->
-> **Links:**
-> • Run the demo: `uv run task dev` → http://localhost:3000
-> • Traces: Jaeger at http://localhost:16686
-> • Reproduce a run: `uv run apps/service/replay.py --thread ci_flake --seed 42`
->
-> **Next step proposals:**
->
-> 1. Wire a read-only Teams Graph adapter in a sandbox tenant.
-> 2. Add a second scenario (policy-to-code twin) using the same runtime.
-> 3. Pilot with a small delivery squad; measure trigger precision and outcome quality.
->
-> Happy to walk through the traces and action-graph from today’s run.
-
----
-
-### Where to put this
-
-* Create `docs/APPENDIX_DEMO_DECK.md`, or
-* Append to the bottom of `README.md` under `## Appendix: Demo Deck & Talk Track`.
-
-If you want, I can also generate a **Marp-ready HTML export command** and a minimal **brand-neutral slide theme** (CSS) so you can export to PDF in one command.
