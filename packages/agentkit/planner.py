@@ -6,6 +6,8 @@ import itertools
 import os
 from typing import Any
 
+from packages.agentkit.provider import OfflineProvider
+
 PLAN_LIBRARY: dict[str, list[dict[str, Any]]] = {
     "ci_flake": [
         {
@@ -73,9 +75,22 @@ def _intent_from_message(message: dict[str, Any]) -> str:
     return "ci_flake"
 
 
-def fork_plans(message: dict[str, Any]) -> list[dict[str, Any]]:
+def _provider() -> OfflineProvider | None:
+    mode = os.getenv("OVERHEAROPS_LLM_MODE", "offline")
+    if mode == "offline":
+        base_dir = os.getenv("OVERHEAROPS_LLM_BASE_DIR", "data/demo/llm")
+        return OfflineProvider(base_dir)
+    return None
+
+
+def fork_plans(message: dict[str, Any], thread_id: str = "ci_flake") -> list[dict[str, Any]]:
     """Return a list of plan candidates constrained by branch width."""
 
+    provider = _provider()
+    if provider:
+        plans = provider.generate_json("plan", thread_id=thread_id)
+        if isinstance(plans, list):
+            return plans[: _branch_cap()]
     intent = _intent_from_message(message)
     candidates: list[dict[str, Any]] = list(PLAN_LIBRARY.get(intent, PLAN_LIBRARY["ci_flake"]))
     while len(candidates) < 3:

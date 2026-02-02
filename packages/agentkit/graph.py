@@ -112,7 +112,8 @@ def node_team(state: State) -> State:
 
 @spanify("plan")
 def node_plan(state: State) -> State:
-    plans = fork_plans(state.get("msg", {}))
+    thread_id = str(state.get("thread_id", "ci_flake"))
+    plans = fork_plans(state.get("msg", {}), thread_id=thread_id)
     return {**state, "plans": plans, "branches": [{"plan": plan} for plan in plans]}
 
 
@@ -129,8 +130,12 @@ def node_exec(state: State) -> State:
 
 @spanify("judge")
 def node_judge(state: State) -> State:
+    thread_id = str(state.get("thread_id", "ci_flake"))
     plans = state.get("plans", [])
-    return {**state, "verdict": multi_agent_judge([{"plan": plan} for plan in plans])}
+    return {
+        **state,
+        "verdict": multi_agent_judge([{"plan": plan} for plan in plans], thread_id=thread_id),
+    }
 
 
 @spanify("gate")

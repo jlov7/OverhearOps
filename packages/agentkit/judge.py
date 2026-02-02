@@ -1,8 +1,11 @@
 """Multi-agent heuristic judge for plan selection."""
 from __future__ import annotations
 
+import os
 from collections import Counter
 from typing import Any
+
+from packages.agentkit.provider import OfflineProvider
 
 
 def _score(plan: dict[str, Any]) -> float:
@@ -14,8 +17,42 @@ def _score(plan: dict[str, Any]) -> float:
     return confidence - penalty + 0.02 * step_count
 
 
-def multi_agent_judge(branches: list[dict[str, Any]]) -> dict[str, Any]:
+def _provider() -> OfflineProvider | None:
+    mode = os.getenv("OVERHEAROPS_LLM_MODE", "offline")
+    if mode == "offline":
+        base_dir = os.getenv("OVERHEAROPS_LLM_BASE_DIR", "data/demo/llm")
+        return OfflineProvider(base_dir)
+    return None
+
+
+def _winner_plan(branches: list[dict[str, Any]], winner_id: str | None) -> dict[str, Any]:
+    if not winner_id:
+        return {}
+    for entry in branches:
+        plan = entry.get("plan", {})
+        if isinstance(plan, dict) and plan.get("id") == winner_id:
+            return plan
+    return {}
+
+
+def multi_agent_judge(branches: list[dict[str, Any]], thread_id: str = "ci_flake") -> dict[str, Any]:
     """Return judge verdict capturing votes and rationale."""
+
+    provider = _provider()
+    if provider:
+        data = provider.generate_json("judge", thread_id=thread_id)
+        winner_id = data.get("winner_plan_id") if isinstance(data, dict) else None
+        votes = data.get("votes", []) if isinstance(data, dict) else []
+        winner_votes = len([vote for vote in votes if vote.get("plan_id") == winner_id])
+        winner_plan = _winner_plan(branches, winner_id)
+        uncertainty = "medium" if winner_votes == 2 else "low"
+        return {
+            "winner_plan_id": winner_id,
+            "winner": {"plan": winner_plan, "votes": winner_votes},
+            "rationale": data.get("rationale", "Offline verdict") if isinstance(data, dict) else "Offline verdict",
+            "uncertainty": uncertainty,
+            "votes": votes,
+        }
 
     if not branches:
         return {"winner": {"plan": {}}, "rationale": "No branches", "uncertainty": "high"}
