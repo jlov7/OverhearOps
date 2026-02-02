@@ -7,6 +7,7 @@ sequenceDiagram
     participant Teams as Teams Adapter (NDJSON)
     participant API as FastAPI Service
     participant Graph as LangGraph Runtime
+    participant Provider as LLM Provider (offline/replay/live)
     participant Guard as Defence Pipeline
     participant OTEL as OpenTelemetry
     participant UI as Next.js Demo
@@ -15,7 +16,8 @@ sequenceDiagram
     Teams->>API: WebSocket `/stream/{thread_id}` pushes updates
     API->>Guard: Coordinator+Guard scan for prompt-injection
     API->>Graph: Invoke durable StateGraph (SQLite checkpointer)
-    Graph->>Graph: overhear → team → plan → exec → judge → gate → ship
+    Graph->>Provider: plan + judge (fixtures or live)
+    Graph->>Graph: overhear → team → plan → exec (per plan) → judge → gate → ship
     Graph->>OTEL: Emit spans per node (action/component graph basis)
     Graph->>API: Return verdict + artefacts
     API-->>UI: REST `/run/{id}` + stored artefacts JSON
@@ -28,12 +30,15 @@ from typing import Any, Dict, List, TypedDict
 
 class State(TypedDict, total=False):
     msg: Dict[str, Any]
+    thread_id: str
     intents: List[str]
     team: List[Dict[str, Any]]
     plans: List[Dict[str, Any]]
     branches: List[Dict[str, Any]]
+    artefacts_by_plan: Dict[str, Any]
     artefacts: Dict[str, Any]
     verdict: Dict[str, Any]
+    gate: Dict[str, Any]
     risk: Dict[str, Any]
 ```
 
@@ -49,7 +54,7 @@ class State(TypedDict, total=False):
 1. `apps/service/replay.py` replays NDJSON messages via WebSocket for demos and tests.
 2. FastAPI service stores latest message, invokes LangGraph with SQLite checkpointer for resumability.
 3. Nodes emit spans via OTLP exporter and the file exporter, writing `runs/{run_id}/spans.jsonl` for replay + action/component graphs.
-4. The service derives `graphs.json`, stores `artefacts.json`, and persists `hash.txt` (SHA-256 of span timeline) alongside the raw spans.
+4. The service derives `graphs.json`, stores `artefacts.json` (including `artefacts_by_plan`), and persists `hash.txt` (SHA-256 of span timeline) alongside the raw spans.
 5. Next.js UI fetches `/run/{id}` and `/runs/{id}/graphs.json`, displays verdict, ribbons, Cytoscape action graph, and the governance modal with replay hash + reproduce command.
 
 ## Span model

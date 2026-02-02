@@ -21,7 +21,8 @@ When a Teams thread starts looping on a flaky CI failure, OverhearOps quietly **
 **Why this is new**
 - *Overhearing* paradigm (listen‑first, intervene only when helpful)  
 - **AgentInit‑style** team initialisation (diversity + expertise)  
-- **Durable branching** (LangGraph 1.0 checkpoints & replay)
+- **Multi‑branch execution** (offline replay + LangGraph checkpoints)
+- **Provider modes** (offline fixtures now; replay/live ready)
 
 **Live path (60s)**
 1. Play the CI thread  
@@ -39,6 +40,7 @@ When a Teams thread starts looping on a flaky CI failure, OverhearOps quietly **
 - **Reproducibility:** **Replay hash**; deterministic run with seed  
 - **Safety:** **Coordinator+Guard** blocks prompt‑injection categories  
 - **Abstain policy:** Ships only when confidence clears threshold
+- **Provider transparency:** Mode + provider surfaced in Governance
 
 **Enterprise fit**
 - **Teams‑compatible** message shape (`chatMessage`)  
@@ -52,6 +54,7 @@ When a Teams thread starts looping on a flaky CI failure, OverhearOps quietly **
 - Outcome quality (patch applies; tests pass)  
 - Safety ASR on mini‑suite = **0**  
 - Cost/latency vs. branch width (≤ 3)
+ - Offline vs live fidelity (fixture drift)
 
 ---
 
@@ -61,7 +64,7 @@ When a Teams thread starts looping on a flaky CI failure, OverhearOps quietly **
 “I kept seeing Teams threads re‑litigate the same fixes. I wanted an agent that **listens first**, then only joins when it can genuinely reduce toil.”
 
 **What it does (15s).**
-“OverhearOps watches a Teams‑shaped stream, composes a small micro‑team tailored to the thread, explores two or three fix plans in parallel, then uses a judge and an uncertainty gate to decide whether to act. It only proposes a **dry‑run** PR and a **clear Jira**—so it’s safe to demo.”
+“OverhearOps watches a Teams‑shaped stream, composes a small micro‑team tailored to the thread, explores two or three fix plans in parallel, then uses a judge and an uncertainty gate to decide whether to act. It only proposes a **dry‑run** PR and a **clear Jira**—and today it runs on **offline fixtures** so it’s safe and deterministic.”
 
 **Why you can trust it (20s).**
 “Every step is **traceable** with OpenTelemetry and rendered as an **action‑graph**. You can **replay** a run with a seed to get the same timeline and verdict. A **Coordinator+Guard** safety layer screens for prompt‑injection and tool misuse. If confidence is low, it **abstains**.”
@@ -110,4 +113,3 @@ OverhearOps flow
 * Open **Jaeger** to prove spans are emitted.
 * Flip to **playground mode** and paste the **Plan Card** into Agents Playground.
 * Narrate the abstain policy and safety banner.
-

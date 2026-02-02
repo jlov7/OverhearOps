@@ -8,4 +8,5 @@
 | Observability gaps | Missing OTEL spans break action-graph reconstruction. | Medium | Fail fast on exporter misconfig, keep Jaeger docker-compose in `task dev`, add tests for exporter initialisation. |
 | Determinism regressions | Replay with same seed produces different artefacts. | Medium | Hash run outputs, add regression test in CI, surface drift in governance modal. |
 | Cost / latency | Multi-branch planning increases runtime and token spend. | Low | Cap branch width via `OVERHEAROPS_BRANCH_WIDTH`, cache heuristics, fall back to abstain on budget breach. |
+| Offline/live mismatch | Offline fixtures drift from real-world outputs, reducing demo fidelity. | Medium | Refresh fixtures from recorded runs; label mode clearly in UI; validate with replay mode. |
 | Compliance | Real tenant data requires retention, DSR, and audit trails. | High | Keep demo data synthetic, document data handling TODO before production adapter, enforce env-var secrets discipline. |

@@ -8,10 +8,11 @@
 - **Safety resilience:** Track attack success rate on the 8x5 prompt-injection mini-suite (target ASR = 0) and capture guard categories.
 - **Span graph coverage & invocation correctness:** Ensure span-derived action graphs include ≥7 nodes with linear chain across overhear→ship and parent→child edges match the LangGraph execution order.
 - **Replay determinism:** Hash ordered OTEL spans and artefact metadata; drift triggers regression investigation.
+- **Gate enforcement:** No shipped artefacts when action is abstain or safety blocked.
 
 ## Test surfaces
 - **Unit:** Intent detection heuristics, team composition diversity scoring, planner branch generator, executor artefact and guard logic, judge/uncertainty logic, defence classifier redaction.
-- **Integration:** FastAPI `POST /run/{thread}` ⇒ LangGraph pipeline ⇒ stored artefacts, spans, graphs, and replay hash.
+- **Integration:** FastAPI `POST /run/{thread}` ⇒ LangGraph pipeline ⇒ stored artefacts, spans, graphs, replay hash, and per-plan artefacts.
 - **UI:** Smoke test main page, run detail view, action graph panel (Playwright optional).
 - **Observability:** OTEL exporter configuration fallback, Jaeger collector connectivity, span-to-graph conversion stub.
 
