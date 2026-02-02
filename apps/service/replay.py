@@ -77,10 +77,10 @@ async def replay(
             if client is None:
                 print(json.dumps(item.message))
             else:
-                await client.post(f"/api/thread/{scheduler.thread_id}/events", json=item.message)
+                await client.post(f"/threads/{scheduler.thread_id}/events", json=item.message)
         run_id = None
         if run_after and client is not None:
-            response = await client.post(f"/api/run/{scheduler.thread_id}")
+            response = await client.post(f"/run/{scheduler.thread_id}")
             response.raise_for_status()
             run_id = response.json()["run_id"]
         return schedule, schedule_hash, run_id

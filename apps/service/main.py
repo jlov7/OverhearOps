@@ -14,11 +14,15 @@ from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from opentelemetry import trace
 
-from apps.service.adapters.teams_demo import iter_messages as demo_iter_messages
+from apps.service.adapters.teams_demo import (
+    iter_messages as demo_iter_messages,
+    list_threads as demo_list_threads,
+)
 from apps.service.adapters.teams_graph import TeamsGraphAdapter
 from packages.agentkit.graph import build_graph
 from packages.obs.action_graph import build_graphs
 from packages.obs.otel import init_otel
+from packages.obs.runtime import set_run_context
 
 
 def _spans_path(run_id: str) -> Path:
@@ -143,6 +147,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+THREAD_EVENTS: dict[str, list[dict[str, Any]]] = {}
+
 TRACER = init_otel("overhearops")
 GRAPH = build_graph(db_url=os.getenv("OVERHEAROPS_DB", "overhearops.db"))
 
@@ -160,6 +166,24 @@ def playground_plan_card() -> dict[str, Any]:
             detail="Playground mode disabled; set ADAPTER=playground to expose the sample card.",
         )
     return PLAYGROUND_PLAN_CARD
+
+
+@app.get("/threads")
+def list_threads() -> dict[str, int]:
+    if ADAPTER_MODE in {"demo", "playground"}:
+        return demo_list_threads()
+    return {}
+
+
+@app.get("/threads/{thread_id}")
+def get_thread(thread_id: str) -> list[dict[str, Any]]:
+    return _load_thread_messages(thread_id)
+
+
+@app.post("/threads/{thread_id}/events")
+def ingest_event(thread_id: str, payload: dict[str, Any]) -> dict[str, str]:
+    THREAD_EVENTS.setdefault(thread_id, []).append(payload)
+    return {"status": "ok"}
 
 
 @app.websocket("/stream/{thread_id}")
@@ -186,11 +210,13 @@ async def run(thread_id: str) -> dict[str, Any]:
     run_dir.mkdir(exist_ok=True, parents=True)
     previous_run_id = os.getenv("OVERHEAROPS_RUN_ID")
     os.environ["OVERHEAROPS_RUN_ID"] = run_id
+    set_run_context(run_id=run_id, mode=os.getenv("OVERHEAROPS_LLM_MODE"), provider=os.getenv("OVERHEAROPS_LLM_PROVIDER"))
     try:
         state: dict[str, Any] = GRAPH.invoke(
             {"msg": last or {}, "thread_id": run_id}, config=config
         )
     finally:
+        set_run_context(run_id=None, mode=None, provider=None)
         if previous_run_id is not None:
             os.environ["OVERHEAROPS_RUN_ID"] = previous_run_id
         else:
@@ -203,9 +229,19 @@ async def run(thread_id: str) -> dict[str, Any]:
     graphs = build_graphs(run_id)
     replay_hash = _compute_replay_hash(run_id)
 
+    verdict = state.get("verdict", {})
     artefacts = {
-        "verdict": state.get("verdict", {}),
+        "run_id": run_id,
+        "thread_id": thread_id,
+        "mode": os.getenv("OVERHEAROPS_LLM_MODE", "offline"),
+        "provider": os.getenv("OVERHEAROPS_LLM_PROVIDER", "offline"),
+        "verdict": verdict,
+        "gate": {
+            "action": verdict.get("action"),
+            "certainty": verdict.get("certainty"),
+        },
         "artefacts": state.get("artefacts", {}),
+        "artefacts_by_plan": state.get("artefacts_by_plan", {}),
         "plans": state.get("plans", []),
         "replay_hash": replay_hash,
         "graphs": graphs,
