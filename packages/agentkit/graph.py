@@ -140,7 +140,12 @@ def node_gate(state: State) -> State:
 
 @spanify("ship")
 def node_ship(state: State) -> State:
-    return state
+    verdict = state.get("verdict", {})
+    artefacts_by_plan = state.get("artefacts_by_plan", {})
+    winner_id = verdict.get("winner_plan_id") or verdict.get("winner", {}).get("plan", {}).get("id")
+    if verdict.get("action") != "approve":
+        return {**state, "artefacts": {"blocked": True, "reason": "abstain"}}
+    return {**state, "artefacts": artefacts_by_plan.get(winner_id, {})}
 
 
 def build_graph(db_url: str = "overhearops.db"):
