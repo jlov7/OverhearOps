@@ -14,6 +14,7 @@ apps/ui/out/
 
 # Runs & artefacts
 runs/
+.worktrees/
 
 # Misc
 .DS_Store
