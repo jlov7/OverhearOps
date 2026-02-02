@@ -8,12 +8,13 @@ from pathlib import Path
 
 from opentelemetry.sdk.trace.export import SpanExporter, SpanExportResult
 
+from packages.obs.runtime import get_run_context
 
 class FileSpanExporter(SpanExporter):
     """Append spans for the active run to `runs/{id}/spans.jsonl`."""
 
     def export(self, spans):  # type: ignore[override]
-        run_id = os.getenv("OVERHEAROPS_RUN_ID")
+        run_id = get_run_context().run_id or os.getenv("OVERHEAROPS_RUN_ID")
         if not run_id:
             return SpanExportResult.SUCCESS
         base = Path(__file__).resolve().parents[2] / "runs" / run_id
