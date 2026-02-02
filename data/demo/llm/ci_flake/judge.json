@@ -1,0 +1,9 @@
+{
+  "winner_plan_id": "plan-quarantine",
+  "rationale": "Majority vote favors quarantine as lowest blast radius",
+  "votes": [
+    {"persona": "Coordinator", "plan_id": "plan-quarantine"},
+    {"persona": "Critic", "plan_id": "plan-quarantine"},
+    {"persona": "RiskGuard", "plan_id": "plan-quarantine"}
+  ]
+}

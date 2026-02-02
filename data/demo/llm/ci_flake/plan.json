@@ -1,0 +1,14 @@
+[
+  {
+    "id": "plan-quarantine",
+    "title": "Quarantine flaky test to unblock release",
+    "hypothesis": "Removing the failing test restores signal whilst investigation continues",
+    "steps": [
+      "Mark integration/test_artifacts as xfail for release branch",
+      "Add monitoring hook for retries",
+      "Document exemption with expiry date"
+    ],
+    "blast_radius": "Low",
+    "confidence": 0.62
+  }
+]
