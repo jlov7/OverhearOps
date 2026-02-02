@@ -45,14 +45,17 @@ def multi_agent_judge(branches: list[dict[str, Any]], thread_id: str = "ci_flake
         votes = data.get("votes", []) if isinstance(data, dict) else []
         winner_votes = len([vote for vote in votes if vote.get("plan_id") == winner_id])
         winner_plan = _winner_plan(branches, winner_id)
-        uncertainty = "medium" if winner_votes == 2 else "low"
-        return {
-            "winner_plan_id": winner_id,
-            "winner": {"plan": winner_plan, "votes": winner_votes},
-            "rationale": data.get("rationale", "Offline verdict") if isinstance(data, dict) else "Offline verdict",
-            "uncertainty": uncertainty,
-            "votes": votes,
-        }
+        if not winner_plan and branches:
+            provider = None
+        else:
+            uncertainty = "medium" if winner_votes == 2 else "low"
+            return {
+                "winner_plan_id": winner_id,
+                "winner": {"plan": winner_plan, "votes": winner_votes},
+                "rationale": data.get("rationale", "Offline verdict") if isinstance(data, dict) else "Offline verdict",
+                "uncertainty": uncertainty,
+                "votes": votes,
+            }
 
     if not branches:
         return {"winner": {"plan": {}}, "rationale": "No branches", "uncertainty": "high"}

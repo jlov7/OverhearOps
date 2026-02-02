@@ -48,10 +48,13 @@ def build_graphs(run_id: str) -> dict[str, Any]:
             if parent_id:
                 action_edges.append({"source": parent_id, "target": span_id})
 
-    if not action_edges and len(action_nodes) > 1:
+    if len(action_nodes) > 1:
         ordered = sorted(action_nodes, key=lambda node: node.get("t0") or 0)
+        existing = {(edge["source"], edge["target"]) for edge in action_edges}
         for first, second in zip(ordered, ordered[1:], strict=False):
-            action_edges.append({"source": first["id"], "target": second["id"]})
+            pair = (first["id"], second["id"])
+            if pair not in existing:
+                action_edges.append({"source": first["id"], "target": second["id"]})
 
     return {
         "action_graph": {"nodes": action_nodes, "edges": action_edges},
