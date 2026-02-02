@@ -7,10 +7,10 @@ import { AdaptiveCard, Container, TextBlock, FactSet, registerAdaptiveStyles } f
 export type RunDetailsProps = {
   run: {
     run_id: string;
-    stages: { node: string }[];
-    final_state: Record<string, any>;
+    plans: any[];
+    verdict: any;
+    gate: { action?: string; certainty?: number };
     graphs: { action_graph: any; component_graph: any };
-    safety: { allowed: boolean; category: string | null; justification: string };
   };
 };
 
@@ -53,9 +53,9 @@ export function RunDetails({ run }: RunDetailsProps) {
     return () => graph.destroy();
   }, [run]);
 
-  const plans = (run.final_state.executions as any[]) ?? [];
-  const winner = run.final_state.judgement?.winner_plan_id;
-  const uncertainty = run.final_state.uncertainty;
+  const plans = run.plans ?? [];
+  const winner = run.verdict?.winner_plan_id;
+  const uncertainty = run.gate;
 
   return (
     <Container>
@@ -63,8 +63,8 @@ export function RunDetails({ run }: RunDetailsProps) {
         <TextBlock text={`Run ${run.run_id}`} weight="bolder" size="medium" />
         <FactSet
           facts={[
-            { title: "Safety", value: run.safety.allowed ? "pass" : run.safety.category ?? "blocked" },
-            { title: "Uncertainty", value: `${uncertainty?.decision ?? "n/a"} (${(uncertainty?.certainty ?? 0).toFixed(2)})` },
+            { title: "Gate", value: run.gate?.action ?? "pending" },
+            { title: "Certainty", value: `${(uncertainty?.certainty ?? 0).toFixed(2)}` },
           ]}
         />
       </AdaptiveCard>
@@ -88,7 +88,7 @@ export function RunDetails({ run }: RunDetailsProps) {
                 <div
                   style={{
                     width: `${Math.round((plan.confidence ?? 0) * 100)}%`,
-                    background: plan.plan_id === winner ? "#107c10" : "#6264a7",
+                    background: plan.id === winner ? "#107c10" : "#6264a7",
                     height: "100%",
                   }}
                 />
@@ -99,19 +99,10 @@ export function RunDetails({ run }: RunDetailsProps) {
                 ))}
               </ul>
               <TextBlock text={`Blast radius: ${plan.blast_radius}`} size="small" />
-              {plan.plan_id === winner && <TextBlock text="Winner" weight="bolder" size="small" />}
+              {plan.id === winner && <TextBlock text="Winner" weight="bolder" size="small" />}
             </div>
           ))}
         </div>
-      </AdaptiveCard>
-
-      <AdaptiveCard>
-        <TextBlock text="Trace timeline" weight="bolder" size="medium" />
-        <ol>
-          {run.stages.map((stage) => (
-            <li key={stage.node}>{stage.node}</li>
-          ))}
-        </ol>
       </AdaptiveCard>
 
       <AdaptiveCard>

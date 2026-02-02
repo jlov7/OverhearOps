@@ -4,7 +4,10 @@ import cytoscape from "cytoscape";
 import { useEffect, useRef } from "react";
 
 type GraphData = {
-  action_graph: { nodes: Array<{ id: string; label: string }>; edges: Array<{ source: string; target: string }> };
+  action_graph: {
+    nodes: Array<{ id: string; label: string; attrs?: Record<string, any> }>;
+    edges: Array<{ source: string; target: string }>;
+  };
 };
 
 export default function Graph({ data }: { data: GraphData }) {
@@ -17,7 +20,12 @@ export default function Graph({ data }: { data: GraphData }) {
     const cy = cytoscape({
       container: ref.current,
       elements: [
-        ...data.action_graph.nodes.map((node) => ({ data: { id: node.id, label: node.label } })),
+        ...data.action_graph.nodes.map((node) => ({
+          data: {
+            id: node.id,
+            label: node.attrs?.["branch.id"] ? `${node.label} (${node.attrs["branch.id"]})` : node.label,
+          },
+        })),
         ...data.action_graph.edges.map((edge) => ({ data: { source: edge.source, target: edge.target } })),
       ],
       style: [

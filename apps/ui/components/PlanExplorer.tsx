@@ -7,10 +7,12 @@ import { withUISpan } from "../lib/otel";
 
 type RunPayload = {
   run_id: string;
-  stages: { node: string; state: Record<string, unknown> }[];
-  final_state: Record<string, unknown>;
+  plans: any[];
+  verdict: any;
+  gate: { action?: string; certainty?: number };
   graphs: { action_graph: unknown; component_graph: unknown };
-  safety: { allowed: boolean; category: string | null; justification: string };
+  artefacts: any;
+  artefacts_by_plan: Record<string, any>;
 };
 
 type PlanExplorerProps = {
@@ -28,7 +30,7 @@ export function PlanExplorer({ apiBase }: PlanExplorerProps) {
     setLoading(true);
     try {
       const data = await withUISpan<RunPayload>("ui.fetch_run", async () => {
-        const res = await fetch(`${apiBase}/api/run/ci_flake`, { method: "POST" });
+        const res = await fetch(`${apiBase}/run/ci_flake`, { method: "POST" });
         if (!res.ok) throw new Error(`Backend returned ${res.status}`);
         return res.json();
       });
@@ -61,9 +63,9 @@ export function PlanExplorer({ apiBase }: PlanExplorerProps) {
     };
   }, [run]);
 
-  const plans = (run?.final_state?.executions as any[]) ?? [];
-  const judgement = run?.final_state?.judgement as any;
-  const uncertainty = run?.final_state?.uncertainty as any;
+  const plans = run?.plans ?? [];
+  const judgement = run?.verdict;
+  const uncertainty = run?.gate;
 
   return (
     <div className="section-card" style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
@@ -92,9 +94,9 @@ export function PlanExplorer({ apiBase }: PlanExplorerProps) {
             <TextBlock text="Safety" weight="bolder" size="small" />
             <FactSet
               facts={[
-                { title: "Allowed", value: String(run.safety.allowed) },
-                { title: "Category", value: run.safety.category ?? "none" },
-                { title: "Justification", value: run.safety.justification },
+                { title: "Action", value: String(run.gate?.action ?? "pending") },
+                { title: "Certainty", value: String(run.gate?.certainty ?? "-") },
+                { title: "Winner", value: String(run.verdict?.winner_plan_id ?? "-") },
               ]}
             />
             <a href={`/run/${run.run_id}`} style={{ fontSize: 12 }}>
@@ -115,24 +117,14 @@ export function PlanExplorer({ apiBase }: PlanExplorerProps) {
                   ))}
                 </ul>
                 <TextBlock text={`Blast radius: ${plan.blast_radius}`} size="small" />
-                {judgement?.winner_plan_id === plan.plan_id && (
+                {judgement?.winner_plan_id === plan.id && (
                   <TextBlock text="Selected by judge" weight="bolder" size="small" />
                 )}
               </div>
             ))}
             {uncertainty && (
-              <TextBlock text={`Uncertainty gate decision: ${uncertainty.decision} (${(uncertainty.certainty ?? 0).toFixed(2)})`} size="small" />
+              <TextBlock text={`Gate decision: ${uncertainty.action ?? "-"} (${(uncertainty.certainty ?? 0).toFixed(2)})`} size="small" />
             )}
-          </AdaptiveCard>
-        )}
-        {run && (
-          <AdaptiveCard>
-            <TextBlock text="Trace timeline" weight="bolder" size="medium" />
-            <ol>
-              {run.stages.map((stage) => (
-                <li key={stage.node}>{stage.node}</li>
-              ))}
-            </ol>
           </AdaptiveCard>
         )}
         <AdaptiveCard>

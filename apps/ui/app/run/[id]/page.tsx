@@ -11,6 +11,11 @@ type RunPayload = {
   artefacts: any;
   plans?: any[];
   replay_hash?: string;
+  artefacts_by_plan?: Record<string, any>;
+  gate?: { action?: string; certainty?: number };
+  provider?: string;
+  mode?: string;
+  thread_id?: string;
 };
 
 type GraphPayload = {
@@ -24,7 +29,7 @@ type GraphPayload = {
   };
 };
 
-const API_BASE = "http://localhost:8000";
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
 
 export default function RunPage({ params }: { params: { id: string } }) {
   const runId = decodeURIComponent(params.id);
@@ -62,12 +67,16 @@ export default function RunPage({ params }: { params: { id: string } }) {
     };
   }, [runId]);
 
-  const winnerPlan = data?.verdict?.winner?.plan ?? data?.artefacts?.plan ?? null;
+  const plans = data?.plans ?? [];
+  const winnerPlanId = data?.verdict?.winner_plan_id ?? data?.verdict?.winner?.plan?.id;
+  const winnerPlan = plans.find((plan) => plan.id === winnerPlanId) ?? data?.verdict?.winner?.plan ?? null;
   const safety = data?.artefacts?.safety;
   const categories = safety?.categories ?? [];
   const safetyPassed = safety ? Boolean(safety.allowed) : true;
   const hasDiff = Boolean(data?.artefacts?.pr_diff);
   const hasJira = !!(data?.artefacts?.jira && Object.keys(data.artefacts.jira).length);
+  const gateAction = data?.gate?.action ?? data?.verdict?.action;
+  const gateCertainty = data?.gate?.certainty ?? data?.verdict?.certainty;
 
   const metrics = useMemo(() => {
     if (!graphs) {
@@ -91,9 +100,9 @@ export default function RunPage({ params }: { params: { id: string } }) {
     return { tokenCost, durationMs, traceIds };
   }, [graphs]);
 
-  const branchCount = data?.plans?.length ?? 0;
+  const branchCount = plans.length;
   const replayHash = data?.replay_hash ?? "";
-  const reproduceCommand = "uv run apps/service/replay.py --thread ci_flake --seed 42";
+  const reproduceCommand = `uv run apps/service/replay.py --thread ${data?.thread_id ?? "ci_flake"} --seed 42`;
 
   return (
     <main style={{ display: "grid", gap: 16, padding: 16 }}>
@@ -130,6 +139,10 @@ export default function RunPage({ params }: { params: { id: string } }) {
                   <strong>Winner:</strong> {winnerPlan?.id} - {winnerPlan?.title}
                 </p>
                 <p>
+                  <strong>Gate:</strong> {gateAction ?? "pending"}{" "}
+                  {gateCertainty !== undefined ? `(${gateCertainty.toFixed(2)})` : ""}
+                </p>
+                <p>
                   <strong>Hypothesis:</strong> {winnerPlan?.hypothesis}
                 </p>
                 <p>
@@ -160,6 +173,31 @@ export default function RunPage({ params }: { params: { id: string } }) {
               </>
             )}
           </div>
+          {plans.length ? (
+            <div style={{ border: "1px solid #e2e8f0", borderRadius: 12, padding: 16, background: "#fff" }}>
+              <h3 style={{ marginTop: 0 }}>All Plans</h3>
+              <div style={{ display: "grid", gap: 12 }}>
+                {plans.map((plan) => (
+                  <div
+                    key={plan.id}
+                    style={{
+                      border: "1px solid #e2e8f0",
+                      borderRadius: 10,
+                      padding: 12,
+                      background: plan.id === winnerPlanId ? "rgba(37,99,235,0.08)" : "#fff",
+                    }}
+                  >
+                    <strong>
+                      {plan.id} — {plan.title}
+                    </strong>
+                    <div style={{ fontSize: 13, color: "#475569", marginTop: 4 }}>
+                      Confidence: {plan.confidence ?? "-"} · Blast radius: {plan.blast_radius ?? "-"}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
         </div>
 
         <div style={{ display: "grid", gap: 12 }}>
@@ -187,6 +225,8 @@ export default function RunPage({ params }: { params: { id: string } }) {
         <dl style={{ display: "grid", gridTemplateColumns: "140px 1fr", gap: 8 }}>
           <dt>Run ID</dt>
           <dd>{runId}</dd>
+          <dt>Provider</dt>
+          <dd>{data?.provider ?? "offline"} ({data?.mode ?? "offline"})</dd>
           <dt>Trace IDs</dt>
           <dd>{metrics.traceIds.length ? metrics.traceIds.join(", ") : "-"}</dd>
           <dt>Branch count</dt>
