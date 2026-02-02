@@ -14,7 +14,7 @@ from opentelemetry import trace
 from opentelemetry.trace import Span
 
 from packages.agentkit.agentinit import compose_team
-from packages.agentkit.executor import try_patch_or_issue
+from packages.agentkit.executor import exec_all_plans, try_patch_or_issue
 from packages.agentkit.judge import multi_agent_judge
 from packages.agentkit.overhear import detect_intents_from_stream
 from packages.agentkit.planner import fork_plans
@@ -119,13 +119,8 @@ def node_plan(state: State) -> State:
 
 @spanify("exec")
 def node_exec(state: State) -> State:
-    plan = state.get("plan")
-    if plan is None and state.get("branches"):
-        branch_plan = state["branches"][0].get("plan")
-        plan = branch_plan if isinstance(branch_plan, dict) else {}
-    if not isinstance(plan, dict):
-        plan = {}
-    return {**state, "artefacts": try_patch_or_issue(plan)}
+    plans = state.get("plans", [])
+    return {**state, "artefacts_by_plan": exec_all_plans(plans)}
 
 
 @spanify("judge")

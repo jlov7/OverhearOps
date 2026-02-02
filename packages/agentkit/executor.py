@@ -5,7 +5,11 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from typing import Any
 
+from opentelemetry import trace
+
 from packages.obs.defence import run_defence
+
+tracer = trace.get_tracer("overhearops.exec")
 
 
 def _render_pr_diff(plan: dict[str, Any]) -> str:
@@ -44,6 +48,15 @@ def _render_jira(plan: dict[str, Any]) -> dict[str, Any]:
         "labels": ["overhearops", plan.get("id", "plan-unknown")],
         "generated_at": now,
     }
+
+
+def exec_all_plans(plans: list[dict[str, Any]]) -> dict[str, Any]:
+    artefacts_by_plan: dict[str, Any] = {}
+    for plan in plans:
+        plan_id = str(plan.get("id", "unknown"))
+        with tracer.start_as_current_span(f"exec.{plan_id}"):
+            artefacts_by_plan[plan_id] = try_patch_or_issue(plan)
+    return artefacts_by_plan
 
 
 def try_patch_or_issue(plan: dict[str, Any]) -> dict[str, Any]:
@@ -89,4 +102,4 @@ def try_patch_or_issue(plan: dict[str, Any]) -> dict[str, Any]:
     return artefacts
 
 
-__all__ = ["try_patch_or_issue"]
+__all__ = ["exec_all_plans", "try_patch_or_issue"]
