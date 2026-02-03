@@ -146,7 +146,7 @@ Expected: PASS.
 **Step 5: Commit**
 
 ```bash
-git add tests/test_determinism.py packages/obs/action_graph.py apps/service/main.py packages/agentkit/executor.py
+git add tests/test_determinism.py apps/service/main.py
 git commit -m "test: enforce offline determinism"
 ```
 
@@ -163,10 +163,23 @@ git commit -m "test: enforce offline determinism"
 ```ts
 import { test, expect } from "@playwright/test";
 
-test("run page surfaces mode and plan count", async ({ page }) => {
-  await page.setContent(`<div>Mode: offline</div><div>Plans executed: 3</div>`);
+test("run summary surfaces mode, provider, and plan count", async ({ page }) => {
+  await page.setContent(`
+    <main>
+      <section>
+        <div class="badges">
+          <span>Mode: offline</span>
+          <span>Provider: offline</span>
+          <span>Plans executed: 3</span>
+        </div>
+        <div class="safety">Safety: Allowed (pii, secrets)</div>
+      </section>
+    </main>
+  `);
   await expect(page.getByText("Mode: offline")).toBeVisible();
+  await expect(page.getByText("Provider: offline")).toBeVisible();
   await expect(page.getByText("Plans executed: 3")).toBeVisible();
+  await expect(page.getByText("Safety: Allowed")).toBeVisible();
 });
 ```
 
