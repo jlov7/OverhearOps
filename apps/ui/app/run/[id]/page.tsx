@@ -77,6 +77,8 @@ export default function RunPage({ params }: { params: { id: string } }) {
   const hasJira = !!(data?.artefacts?.jira && Object.keys(data.artefacts.jira).length);
   const gateAction = data?.gate?.action ?? data?.verdict?.action;
   const gateCertainty = data?.gate?.certainty ?? data?.verdict?.certainty;
+  const modeLabel = data?.mode ?? "offline";
+  const providerLabel = data?.provider ?? "offline";
 
   const metrics = useMemo(() => {
     if (!graphs) {
@@ -135,6 +137,27 @@ export default function RunPage({ params }: { params: { id: string } }) {
             {loading && <p>Loading run summary...</p>}
             {!loading && data && (
               <>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 8 }}>
+                  {[
+                    `Mode: ${modeLabel}`,
+                    `Provider: ${providerLabel}`,
+                    `Plans executed: ${branchCount}`,
+                  ].map((label) => (
+                    <span
+                      key={label}
+                      style={{
+                        fontSize: 12,
+                        padding: "4px 8px",
+                        borderRadius: 999,
+                        background: "#e2e8f0",
+                        color: "#0f172a",
+                        fontWeight: 600,
+                      }}
+                    >
+                      {label}
+                    </span>
+                  ))}
+                </div>
                 <p style={{ marginTop: 0 }}>
                   <strong>Winner:</strong> {winnerPlan?.id} - {winnerPlan?.title}
                 </p>
@@ -142,6 +165,18 @@ export default function RunPage({ params }: { params: { id: string } }) {
                   <strong>Gate:</strong> {gateAction ?? "pending"}{" "}
                   {gateCertainty !== undefined ? `(${gateCertainty.toFixed(2)})` : ""}
                 </p>
+                <div
+                  style={{
+                    borderRadius: 10,
+                    padding: 12,
+                    marginTop: 12,
+                    background: safetyPassed ? "rgba(22,163,74,0.12)" : "rgba(220,38,38,0.12)",
+                    color: safetyPassed ? "#166534" : "#991b1b",
+                  }}
+                >
+                  <strong>Safety</strong>: {safetyPassed ? "Allowed" : "Blocked"} - {safety?.justification ?? "Guard active"}
+                  {categories.length ? <span> ({categories.join(", ")})</span> : null}
+                </div>
                 <p>
                   <strong>Hypothesis:</strong> {winnerPlan?.hypothesis}
                 </p>
@@ -158,18 +193,6 @@ export default function RunPage({ params }: { params: { id: string } }) {
                     ))}
                   </ul>
                 ) : null}
-                <div
-                  style={{
-                    borderRadius: 10,
-                    padding: 12,
-                    marginTop: 12,
-                    background: safetyPassed ? "rgba(22,163,74,0.12)" : "rgba(220,38,38,0.12)",
-                    color: safetyPassed ? "#166534" : "#991b1b",
-                  }}
-                >
-                  <strong>Safety</strong>: {safetyPassed ? "Passed" : "Blocked"} - {safety?.justification ?? "Guard active"}
-                  {categories.length ? <span> ({categories.join(", ")})</span> : null}
-                </div>
               </>
             )}
           </div>
