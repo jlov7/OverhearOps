@@ -1,0 +1,38 @@
+[
+  {
+    "id": "plan-rotate-keys",
+    "title": "Rotate secrets and revoke refresh tokens",
+    "hypothesis": "Forced rotation cuts off exploited credentials while patch rolls out",
+    "steps": [
+      "Revoke all refresh tokens minted in last 24h",
+      "Rotate signing keys in auth service",
+      "Notify support about forced logouts"
+    ],
+    "blast_radius": "Medium",
+    "confidence": 0.7
+  },
+  {
+    "id": "plan-hotfix-patch",
+    "title": "Apply vendor patch and deploy hotfix",
+    "hypothesis": "Upgrading vulnerable library removes exploit path",
+    "steps": [
+      "Upgrade oauth dependency to patched version",
+      "Run smoke tests on auth flows",
+      "Deploy hotfix behind feature flag"
+    ],
+    "blast_radius": "Medium",
+    "confidence": 0.64
+  },
+  {
+    "id": "plan-waf-guard",
+    "title": "Deploy WAF rule and add monitoring",
+    "hypothesis": "Blocking legacy refresh requests reduces exposure while patching",
+    "steps": [
+      "Add WAF rule for legacy grant_type",
+      "Alert on blocked attempts",
+      "Prepare rollback for false positives"
+    ],
+    "blast_radius": "Low",
+    "confidence": 0.55
+  }
+]

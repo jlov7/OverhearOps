@@ -1,0 +1,9 @@
+{
+  "winner_plan_id": "plan-rotate-keys",
+  "rationale": "Majority vote favors rotation to immediately cut off compromised tokens",
+  "votes": [
+    {"persona": "Coordinator", "plan_id": "plan-rotate-keys"},
+    {"persona": "Critic", "plan_id": "plan-hotfix-patch"},
+    {"persona": "RiskGuard", "plan_id": "plan-rotate-keys"}
+  ]
+}

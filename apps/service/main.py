@@ -213,7 +213,7 @@ async def run(thread_id: str) -> dict[str, Any]:
     set_run_context(run_id=run_id, mode=os.getenv("OVERHEAROPS_LLM_MODE"), provider=os.getenv("OVERHEAROPS_LLM_PROVIDER"))
     try:
         state: dict[str, Any] = GRAPH.invoke(
-            {"msg": last or {}, "thread_id": run_id}, config=config
+            {"msg": last or {}, "thread_id": thread_id}, config=config
         )
     finally:
         set_run_context(run_id=None, mode=None, provider=None)

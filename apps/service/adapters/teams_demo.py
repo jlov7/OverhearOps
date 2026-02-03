@@ -32,7 +32,10 @@ def _load_ndjson(path: Path) -> list[dict]:
         return [json.loads(line) for line in fh if line.strip()]
 
 
-THREADS: dict[str, list[dict]] = {"ci_flake": _load_ndjson(DATA_DIR / "ci_flake.ndjson")}
+THREADS: dict[str, list[dict]] = {
+    "ci_flake": _load_ndjson(DATA_DIR / "ci_flake.ndjson"),
+    "security_alert": _load_ndjson(DATA_DIR / "security_alert.ndjson"),
+}
 
 
 def iter_messages(thread_id: str) -> Iterable[dict]:

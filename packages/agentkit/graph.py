@@ -27,6 +27,7 @@ current_span_var: ContextVar[Span | None] = ContextVar("overhearops_current_span
 
 class State(TypedDict, total=False):
     msg: dict[str, Any]
+    thread_id: str
     intents: list[str]
     plans: list[dict[str, Any]]
     branches: list[dict[str, Any]]

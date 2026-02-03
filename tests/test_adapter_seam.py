@@ -45,3 +45,9 @@ def test_graph_mode_needs_credentials(monkeypatch):
         assert response.status_code == 401
         detail = response.json().get("detail", "")
         assert "not configured" in detail.lower()
+
+
+def test_demo_threads_include_security():
+    from apps.service.adapters.teams_demo import THREADS
+
+    assert "security_alert" in THREADS
