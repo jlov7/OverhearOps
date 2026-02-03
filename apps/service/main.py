@@ -35,21 +35,23 @@ def _compute_replay_hash(run_id: str) -> str:
     if not span_file.exists():
         digest.update(run_id.encode('utf-8'))
         return digest.hexdigest()
-    records: list[tuple[str, str, str, str]] = []
+    records: list[dict[str, Any]] = []
     with span_file.open('r', encoding='utf-8') as handle:
         for line in handle:
             data = json.loads(line)
+            attributes = data.get('attributes')
+            if not isinstance(attributes, dict):
+                attributes = {}
+            stable_attrs = {key: attributes[key] for key in sorted(attributes)}
             records.append(
-                (
-                    str(data.get('span_id', '')),
-                    str(data.get('name', '')),
-                    str(data.get('start_time', '')),
-                    str(data.get('end_time', '')),
-                )
+                {
+                    "name": str(data.get('name', '')),
+                    "attributes": stable_attrs,
+                }
             )
-    records.sort(key=lambda item: (item[2], item[0]))
+    records.sort(key=lambda item: (item["name"], json.dumps(item["attributes"], sort_keys=True, default=str)))
     for record in records:
-        digest.update('|'.join(record).encode('utf-8'))
+        digest.update(json.dumps(record, sort_keys=True, default=str).encode('utf-8'))
     return digest.hexdigest()
 
 
