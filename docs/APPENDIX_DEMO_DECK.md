@@ -13,10 +13,11 @@ marp: true
 When a Teams thread starts looping on a flaky CI failure, OverhearOps quietly **listens**, spins up a **micro‑team**, explores **2–3 plans** in parallel, and proposes a **traceable, safe, replayable** fix.
 
 **What you’ll see**
-- **Teams‑style thread** → *Suggest Plans*  
+- **Teams‑style thread (CI flake or Security alert)** → *Suggest Plans*  
 - **Plan A/B/C** with confidence & cost ribbons  
 - **Winner** chosen by judge + **uncertainty gate**  
 - **Dry‑run PR diff & Jira summary** (no real writes)
+- **Mode/Provider + plan count cues** in the run summary
 
 **Why this is new**
 - *Overhearing* paradigm (listen‑first, intervene only when helpful)  
@@ -25,7 +26,7 @@ When a Teams thread starts looping on a flaky CI failure, OverhearOps quietly **
 - **Provider modes** (offline fixtures now; replay/live ready)
 
 **Live path (60s)**
-1. Play the CI thread  
+1. Play the CI flake or Security alert thread  
 2. Click **Suggest Plans**  
 3. Show diff, Jira summary  
 4. Open **Trace & Action‑graph**  
@@ -37,7 +38,7 @@ When a Teams thread starts looping on a flaky CI failure, OverhearOps quietly **
 
 **Trust by design**
 - **Traceability:** OpenTelemetry spans → **Action‑graph** (who did what, when)  
-- **Reproducibility:** **Replay hash**; deterministic run with seed  
+- **Reproducibility:** **Replay hash**; deterministic run with seed + determinism test  
 - **Safety:** **Coordinator+Guard** blocks prompt‑injection categories  
 - **Abstain policy:** Ships only when confidence clears threshold
 - **Provider transparency:** Mode + provider surfaced in Governance
@@ -87,6 +88,14 @@ OverhearOps flow
 ```
 
 ---
+
+## Demo smoke checklist
+
+- **Threads available:** `/threads` lists `ci_flake` and `security_alert`
+- **Run summary cues:** Mode/Provider badges + plans executed count visible
+- **Safety summary:** Allowed/Blocked status with categories rendered
+- **Replay determinism:** `uv run pytest tests/test_determinism.py::test_determinism_offline -v`
+- **Governance modal:** Trace IDs + replay hash present
 
 ## Q&A crib sheet (quick answers)
 

@@ -7,13 +7,13 @@ OverhearOps is a local, demo-ready agentic system that “overhears” Teams-sha
 2. **Bootstrap dependencies:** Run `uv sync` to create the virtual environment, then `npm install` inside `apps/ui` if this is your first checkout.
 3. **Environment file:** Copy `.env.example` to `.env`, keep `ADAPTER=demo` for NDJSON mode, and set OTEL or branch width overrides as needed. Leave the Microsoft Graph secrets blank until you are ready to switch to `ADAPTER=graph`. Default LLM mode is `offline` (fixtures).
 4. **Run the stack:** Use `uv run task dev` (details below) to launch FastAPI, the Next.js UI, and the local OTEL collector in one go.
-5. **First run:** Visit `http://localhost:3000`, press **Suggest Plans**, then open the Governance modal to confirm trace IDs, branch count, and replay hash appear. Jaeger (`http://localhost:16686`) should show the run spans.
+5. **First run:** Visit `http://localhost:3000`, pick the CI flake or security alert thread, press **Suggest Plans**, then open the Governance modal to confirm trace IDs, branch count, and replay hash appear. Jaeger (`http://localhost:16686`) should show the run spans.
 6. **Graph or Playground modes:** When you have tenant access, set `ADAPTER=graph` and provide `MS_TENANT_ID`, `MS_CLIENT_ID`, `MS_CLIENT_SECRET`. For demo sharing without creds, flip to `ADAPTER=playground` and copy the sample Adaptive Card into the Microsoft 365 Agents Playground.
 
 ## 60-second demo flow
 1. `uv run task dev` to launch FastAPI backend, Next.js UI, and OTEL stack.
 2. Visit `http://localhost:3000` to load the Teams-style thread player.
-3. Click **Suggest Plans** once the CI flake conversation appears; watch plan branches, judge decision, and shipped artefacts populate.
+3. Click **Suggest Plans** once the CI flake or security alert conversation appears; watch plan branches, judge decision, and shipped artefacts populate.
 4. Inspect `/run/{id}` for action graph visualisation, safety ribbon, and open the Governance modal for trace IDs + replay hash.
 5. Optional: `uv run task replay --seed=42` to deterministically regenerate agent spans.
 
@@ -45,6 +45,16 @@ Ensure Node 20+ and Docker are available. The command boots the backend (port 80
 - `OVERHEAROPS_LLM_MODE=live`: Call the configured provider directly (costs apply).
 
 Set `OVERHEAROPS_LLM_PROVIDER` to label the provider in run payloads (defaults to `offline`).
+
+## Demo threads
+- `ci_flake`: pipeline timeout & test flakiness triage.
+- `security_alert`: CVE response with rotation + hotfix plans.
+
+## Demo smoke checklist
+- `/threads` lists `ci_flake` + `security_alert`.
+- Run detail view shows **Mode/Provider** badges and **Plans executed** count.
+- `uv run pytest tests/test_determinism.py::test_determinism_offline -v` passes.
+- `uv run pytest tests/test_security_scenario.py::test_security_thread_uses_security_fixtures -v` passes.
 
 ### Agents Playground plan card
 ```json
@@ -83,7 +93,7 @@ Set `OVERHEAROPS_LLM_PROVIDER` to label the provider in run payloads (defaults t
 - `packages/obs`: OpenTelemetry bootstrap, action graph builder, safety pipeline.
 - `apps/ui`: Next.js Teams-style UI with AdaptiveCard-like kit and Cytoscape visualisation.
 - `infra`: Local OTEL collector, Tempo, Grafana.
-- `tests`: Unit, e2e, and replay determinism checks.
+- `tests`: Unit, e2e, replay determinism, and security scenario checks.
 
 ## Observability setup
 Set `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318` and `OTEL_SERVICE_NAME=overhearops`. The service also writes spans to `runs/{id}/spans.jsonl`, derives `graphs.json`, and surfaces replay hashes in the UI. Grafana (http://localhost:3001) ships with Tempo datasource preconfigured.

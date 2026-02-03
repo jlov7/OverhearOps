@@ -7,18 +7,19 @@
 - **Artefact completeness:** Ensure dry-run PR diff, Jira payload, and runbook note reference the winning plan and include blast-radius context.
 - **Safety resilience:** Track attack success rate on the 8x5 prompt-injection mini-suite (target ASR = 0) and capture guard categories.
 - **Span graph coverage & invocation correctness:** Ensure span-derived action graphs include ≥7 nodes with linear chain across overhear→ship and parent→child edges match the LangGraph execution order.
-- **Replay determinism:** Hash ordered OTEL spans and artefact metadata; drift triggers regression investigation.
+- **Replay determinism:** Hash span signatures and artefact metadata; drift triggers regression investigation (see `tests/test_determinism.py`).
 - **Gate enforcement:** No shipped artefacts when action is abstain or safety blocked.
 
 ## Test surfaces
 - **Unit:** Intent detection heuristics, team composition diversity scoring, planner branch generator, executor artefact and guard logic, judge/uncertainty logic, defence classifier redaction.
-- **Integration:** FastAPI `POST /run/{thread}` ⇒ LangGraph pipeline ⇒ stored artefacts, spans, graphs, replay hash, and per-plan artefacts.
+- **Integration:** FastAPI `POST /run/{thread}` ⇒ LangGraph pipeline ⇒ stored artefacts, spans, graphs, replay hash, and per-plan artefacts (CI flake + security alert threads).
 - **UI:** Smoke test main page, run detail view, action graph panel (Playwright optional).
 - **Observability:** OTEL exporter configuration fallback, Jaeger collector connectivity, span-to-graph conversion stub.
 
 ## Automation
 - `task lint` ⇒ Ruff + mypy; `task test` ⇒ pytest suite (unit, safety attack suite, replay hash, API smoke) with optional Playwright toggle.
 - Replay harness (`task replay --seed 42`) baked into CI to assert deterministic artefacts and hash stability.
+- Security scenario regression uses offline fixtures (`tests/test_security_scenario.py`).
 - Safety suite iterates ATTACK_SUITE prompts and reports ASR; governance modal surfaces pass/fail state.
 
 ## Reporting
