@@ -1,0 +1,42 @@
+{
+  "api_version": "v1",
+  "approvals": {
+    "min_approvals": 1
+  },
+  "feature_flags": {
+    "analytics_ingest_enabled": true,
+    "notifications_enabled": false,
+    "run_execution_enabled": true,
+    "ship_side_effects_enabled": true
+  },
+  "localization": {
+    "default_locale": "en",
+    "supported_locales": [
+      "en",
+      "es"
+    ]
+  },
+  "model_routing": {
+    "exec": {
+      "fallback_model": "gpt-5-nano",
+      "model": "gpt-5-nano"
+    },
+    "judge": {
+      "fallback_model": "gpt-5-nano",
+      "model": "gpt-5-mini"
+    },
+    "plan": {
+      "fallback_model": "gpt-5-nano",
+      "model": "gpt-5-mini"
+    }
+  },
+  "notifications": {
+    "teams_webhooks": [],
+    "webhooks": []
+  },
+  "strategy_preset": "safety",
+  "token_budgets": {
+    "per_run": 200000,
+    "per_tenant": 50000000
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "default_version": "v1",
+  "tasks": {
+    "judge": {
+      "selected_version": "v1",
+      "v1": "Return JSON only. Produce an object with keys: winner_plan_id, rationale, votes (array of objects with persona and plan_id).",
+      "v2": "Return JSON only. Select a winner_plan_id and explain tradeoffs in rationale; votes must include at least three personas."
+    },
+    "plan": {
+      "selected_version": "v1",
+      "v1": "Return JSON only. Produce a list of remediation plan objects with keys: id, title, hypothesis, steps (array of strings), blast_radius, confidence (0..1).",
+      "v2": "Return JSON only. Produce 2-5 remediation plans with id/title/hypothesis/steps/blast_radius/confidence and prioritize operational safety."
+    }
+  }
+}

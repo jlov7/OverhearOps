@@ -14,7 +14,7 @@ def test_demo_adapter_mode(monkeypatch):
         response = client.post("/run/ci_flake")
         assert response.status_code == 200
         payload = response.json()
-        assert payload["run_id"].startswith("demo-ci_flake-")
+        assert payload["run_id"].startswith(f"{main._default_tenant()}-demo-ci_flake-")
 
 
 def test_playground_mode_card(monkeypatch):
@@ -30,7 +30,9 @@ def test_playground_mode_card(monkeypatch):
 
         run_response = client.post("/run/ci_flake")
         assert run_response.status_code == 200
-        assert run_response.json()["run_id"].startswith("playground-ci_flake-")
+        assert run_response.json()["run_id"].startswith(
+            f"{main._default_tenant()}-playground-ci_flake-"
+        )
 
 
 def test_graph_mode_needs_credentials(monkeypatch):

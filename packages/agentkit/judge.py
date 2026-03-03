@@ -5,7 +5,8 @@ import os
 from collections import Counter
 from typing import Any
 
-from packages.agentkit.provider import OfflineProvider
+from apps.service.runtime_config import get_strategy_preset
+from packages.agentkit.provider import LLMProvider, resolve_provider
 
 
 def _score(plan: dict[str, Any]) -> float:
@@ -14,15 +15,21 @@ def _score(plan: dict[str, Any]) -> float:
     penalty = 0.2 if "high" in blast else 0.1 if "medium" in blast else 0.0
     steps = plan.get("steps", [])
     step_count = len(steps) if isinstance(steps, list) else 0
-    return confidence - penalty + 0.02 * step_count
+    base = confidence - penalty + 0.02 * step_count
+    preset = get_strategy_preset()
+    if preset == "speed":
+        return base + 0.05
+    if preset == "cost":
+        return base - 0.03
+    return base
 
 
-def _provider() -> OfflineProvider | None:
-    mode = os.getenv("OVERHEAROPS_LLM_MODE", "offline")
-    if mode == "offline":
-        base_dir = os.getenv("OVERHEAROPS_LLM_BASE_DIR", "data/demo/llm")
-        return OfflineProvider(base_dir)
-    return None
+def _provider() -> LLMProvider | None:
+    return resolve_provider(
+        mode=os.getenv("OVERHEAROPS_LLM_MODE", "offline"),
+        provider_name=os.getenv("OVERHEAROPS_LLM_PROVIDER", "offline"),
+        base_dir=os.getenv("OVERHEAROPS_LLM_BASE_DIR", "data/demo/llm"),
+    )
 
 
 def _winner_plan(branches: list[dict[str, Any]], winner_id: str | None) -> dict[str, Any]:
@@ -35,15 +42,19 @@ def _winner_plan(branches: list[dict[str, Any]], winner_id: str | None) -> dict[
     return {}
 
 
-def multi_agent_judge(branches: list[dict[str, Any]], thread_id: str = "ci_flake") -> dict[str, Any]:
+def multi_agent_judge(
+    branches: list[dict[str, Any]], thread_id: str = "ci_flake"
+) -> dict[str, Any]:
     """Return judge verdict capturing votes and rationale."""
 
     provider = _provider()
     if provider:
         data = provider.generate_json("judge", thread_id=thread_id)
         winner_id = data.get("winner_plan_id") if isinstance(data, dict) else None
-        votes = data.get("votes", []) if isinstance(data, dict) else []
-        winner_votes = len([vote for vote in votes if vote.get("plan_id") == winner_id])
+        provider_votes = data.get("votes", []) if isinstance(data, dict) else []
+        winner_votes = len(
+            [vote for vote in provider_votes if vote.get("plan_id") == winner_id]
+        )
         winner_plan = _winner_plan(branches, winner_id)
         if not winner_plan and branches:
             provider = None
@@ -52,9 +63,13 @@ def multi_agent_judge(branches: list[dict[str, Any]], thread_id: str = "ci_flake
             return {
                 "winner_plan_id": winner_id,
                 "winner": {"plan": winner_plan, "votes": winner_votes},
-                "rationale": data.get("rationale", "Offline verdict") if isinstance(data, dict) else "Offline verdict",
+                "rationale": (
+                    data.get("rationale", "Offline verdict")
+                    if isinstance(data, dict)
+                    else "Offline verdict"
+                ),
                 "uncertainty": uncertainty,
-                "votes": votes,
+                "votes": provider_votes,
             }
 
     if not branches:

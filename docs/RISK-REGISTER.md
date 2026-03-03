@@ -9,4 +9,4 @@
 | Determinism regressions | Replay with same seed produces different artefacts. | Medium | Hash run outputs, add regression test in CI, surface drift in governance modal. |
 | Cost / latency | Multi-branch planning increases runtime and token spend. | Low | Cap branch width via `OVERHEAROPS_BRANCH_WIDTH`, cache heuristics, fall back to abstain on budget breach. |
 | Offline/live mismatch | Offline fixtures drift from real-world outputs, reducing demo fidelity. | Medium | Refresh fixtures from recorded runs; label mode clearly in UI; validate with replay mode. |
-| Compliance | Real tenant data requires retention, DSR, and audit trails. | High | Keep demo data synthetic, document data handling TODO before production adapter, enforce env-var secrets discipline. |
+| Compliance | Real tenant data requires retention, DSR, and audit trails. | High | Keep demo data synthetic, enforce tenant-scoped retention and DSR controls, maintain immutable audit logs, and enforce env-var secrets discipline. |

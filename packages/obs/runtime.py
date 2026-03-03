@@ -11,7 +11,7 @@ class RunContext:
     provider: str | None = None
 
 
-_current: ContextVar[RunContext] = ContextVar("overhearops_run_context", default=RunContext())
+_current: ContextVar[RunContext | None] = ContextVar("overhearops_run_context", default=None)
 
 
 def set_run_context(
@@ -23,4 +23,5 @@ def set_run_context(
 
 
 def get_run_context() -> RunContext:
-    return _current.get()
+    context = _current.get()
+    return context if context is not None else RunContext()

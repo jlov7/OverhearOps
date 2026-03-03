@@ -1,0 +1,13 @@
+{
+  "shipping": {
+    "allowed_actions": [
+      "approve",
+      "ship"
+    ],
+    "min_certainty": 0.99
+  },
+  "simulation": {
+    "max_allowed_blast_radius": "medium",
+    "require_safety_allowed": true
+  }
+}

@@ -21,6 +21,10 @@
 - Replay harness (`task replay --seed 42`) baked into CI to assert deterministic artefacts and hash stability.
 - Security scenario regression uses offline fixtures (`tests/test_security_scenario.py`).
 - Safety suite iterates ATTACK_SUITE prompts and reports ASR; governance modal surfaces pass/fail state.
+- Regression eval pack: `tests/evals/test_regression_evals.py`.
+- Adversarial pack: `tests/security/test_adversarial_pack.py`.
+- Benchmark scorecard: `uv run python scripts/benchmark_scorecard.py`.
+- Canary rollback gate: `uv run python scripts/canary_rollout.py`.
 
 ## Reporting
 - Persist evaluation metadata in `runs/{run_id}/artefacts.json` and future governance modal.

@@ -2,14 +2,26 @@
 
 from __future__ import annotations
 
+import os
 from datetime import UTC, datetime
 from typing import Any
 
 from opentelemetry import trace
 
+from apps.service.runtime_config import get_strategy_preset
 from packages.obs.defence import run_defence
 
 tracer = trace.get_tracer("overhearops.exec")
+
+
+def _artifact_timestamp() -> str:
+    override = os.getenv("OVERHEAROPS_ARTEFACT_TIMESTAMP")
+    if override:
+        return override
+    mode = os.getenv("OVERHEAROPS_LLM_MODE", "offline").lower()
+    if mode in {"offline", "replay"}:
+        return "1970-01-01T00:00:00+00:00"
+    return datetime.now(UTC).isoformat()
 
 
 def _render_pr_diff(plan: dict[str, Any]) -> str:
@@ -31,7 +43,7 @@ def _render_pr_diff(plan: dict[str, Any]) -> str:
 
 
 def _render_jira(plan: dict[str, Any]) -> dict[str, Any]:
-    now = datetime.now(UTC).isoformat()
+    now = _artifact_timestamp()
     steps = plan.get("steps", [])
     if not isinstance(steps, list):
         steps = list(steps) if hasattr(steps, "__iter__") else []
@@ -79,6 +91,7 @@ def try_patch_or_issue(plan: dict[str, Any]) -> dict[str, Any]:
     decision = run_defence(signal)
     notes = [
         "Team coverage: coordinator, fixer, critic, riskguard",
+        f"Strategy preset: {get_strategy_preset()}",
         f"Confidence estimate: {safe_plan.get('confidence', 0.0):.2f}",
         f"Safety guard: {decision.justification}",
     ]

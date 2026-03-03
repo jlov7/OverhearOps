@@ -18,3 +18,19 @@ tasks:
   obs-up:
     cmds:
       - docker compose -f infra/docker-compose.yaml up -d
+  release-gate:
+    cmds:
+      - ./scripts/release_gate.sh
+  perf:
+    cmds:
+      - uv run python scripts/load_soak.py --base-url http://localhost:8000 --concurrency 20 --requests-per-worker 50
+  benchmark:
+    cmds:
+      - uv run python scripts/benchmark_scorecard.py
+  canary:
+    cmds:
+      - uv run python scripts/canary_rollout.py
+  health-check:
+    cmds:
+      - uv run python scripts/integration_health_check.py
+      - uv run python scripts/probe_public_status.py

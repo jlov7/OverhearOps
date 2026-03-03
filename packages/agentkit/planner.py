@@ -6,7 +6,8 @@ import itertools
 import os
 from typing import Any
 
-from packages.agentkit.provider import OfflineProvider
+from apps.service.runtime_config import get_strategy_preset
+from packages.agentkit.provider import LLMProvider, resolve_provider
 
 PLAN_LIBRARY: dict[str, list[dict[str, Any]]] = {
     "ci_flake": [
@@ -61,9 +62,15 @@ _fallback_counter = itertools.count(1)
 
 def _branch_cap() -> int:
     try:
-        return max(1, int(os.getenv("OVERHEAROPS_BRANCH_WIDTH", "3")))
+        configured = max(1, int(os.getenv("OVERHEAROPS_BRANCH_WIDTH", "3")))
     except ValueError:
-        return 3
+        configured = 3
+    preset = get_strategy_preset()
+    if preset == "speed":
+        return min(configured, 2)
+    if preset == "cost":
+        return min(configured, 2)
+    return configured
 
 
 def _intent_from_message(message: dict[str, Any]) -> str:
@@ -75,12 +82,12 @@ def _intent_from_message(message: dict[str, Any]) -> str:
     return "ci_flake"
 
 
-def _provider() -> OfflineProvider | None:
-    mode = os.getenv("OVERHEAROPS_LLM_MODE", "offline")
-    if mode == "offline":
-        base_dir = os.getenv("OVERHEAROPS_LLM_BASE_DIR", "data/demo/llm")
-        return OfflineProvider(base_dir)
-    return None
+def _provider() -> LLMProvider | None:
+    return resolve_provider(
+        mode=os.getenv("OVERHEAROPS_LLM_MODE", "offline"),
+        provider_name=os.getenv("OVERHEAROPS_LLM_PROVIDER", "offline"),
+        base_dir=os.getenv("OVERHEAROPS_LLM_BASE_DIR", "data/demo/llm"),
+    )
 
 
 def fork_plans(message: dict[str, Any], thread_id: str = "ci_flake") -> list[dict[str, Any]]:

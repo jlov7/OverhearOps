@@ -1,0 +1,33 @@
+{
+  "title": "OverhearOps Release Dashboard",
+  "uid": "overhearops-release",
+  "schemaVersion": 39,
+  "version": 1,
+  "time": { "from": "now-6h", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "type": "timeseries",
+      "title": "Run Success Rate",
+      "targets": [
+        { "expr": "sum(rate(overhearops_runs_succeeded_total[5m])) / sum(rate(overhearops_runs_total[5m]))" }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Queue Oldest Age (s)",
+      "targets": [
+        { "expr": "overhearops_queue_oldest_age_seconds" }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "DLQ Item Count",
+      "targets": [
+        { "expr": "overhearops_dlq_items_total" }
+      ]
+    }
+  ]
+}

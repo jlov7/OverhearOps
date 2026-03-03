@@ -5,6 +5,8 @@ import { useEffect, useMemo, useState } from "react";
 import Graph from "../../../components/Graph";
 import Modal from "../../../components/Modal";
 import Ribbon from "../../../components/Ribbon";
+import { trackEvent } from "../../../lib/analytics";
+import { normalizeLocale, t, type Locale } from "../../../lib/i18n";
 
 type RunPayload = {
   verdict: any;
@@ -39,8 +41,13 @@ export default function RunPage({ params }: { params: { id: string } }) {
   const [showGovernance, setShowGovernance] = useState(false);
   const [showDiff, setShowDiff] = useState(false);
   const [showJira, setShowJira] = useState(false);
+  const [locale, setLocale] = useState<Locale>("en");
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      setLocale(normalizeLocale(window.localStorage.getItem("overhearops_locale")));
+    }
+    void trackEvent("run_view", { run_id: runId });
     let cancelled = false;
     async function load() {
       setLoading(true);
@@ -105,6 +112,8 @@ export default function RunPage({ params }: { params: { id: string } }) {
   const branchCount = plans.length;
   const replayHash = data?.replay_hash ?? "";
   const reproduceCommand = `uv run apps/service/replay.py --thread ${data?.thread_id ?? "ci_flake"} --seed 42`;
+  const jaegerBase = process.env.NEXT_PUBLIC_JAEGER_BASE || "http://localhost:16686";
+  const votes = Array.isArray(data?.verdict?.votes) ? data?.verdict?.votes : [];
 
   return (
     <main style={{ display: "grid", gap: 16, padding: 16 }}>
@@ -186,6 +195,15 @@ export default function RunPage({ params }: { params: { id: string } }) {
                 <p>
                   <strong>Uncertainty:</strong> {data.verdict?.uncertainty}
                 </p>
+                <div style={{ borderTop: "1px dashed #cbd5e1", paddingTop: 8, marginTop: 8 }}>
+                  <strong>{t(locale, "explainability")}:</strong>
+                  <ul style={{ marginTop: 6, paddingLeft: 18 }}>
+                    <li>Winner plan id: {winnerPlanId || "-"}</li>
+                    <li>Gate action: {gateAction ?? "-"}</li>
+                    <li>Safety categories: {categories.length ? categories.join(", ") : "none"}</li>
+                    <li>Votes captured: {votes.length}</li>
+                  </ul>
+                </div>
                 {Array.isArray(winnerPlan?.steps) && winnerPlan.steps.length ? (
                   <ul style={{ margin: "8px 0 0", paddingLeft: 18 }}>
                     {winnerPlan.steps.map((step: string, index: number) => (
@@ -229,7 +247,22 @@ export default function RunPage({ params }: { params: { id: string } }) {
             {graphs ? <Graph data={graphs} /> : <p>Graph will appear once spans are available.</p>}
           </div>
           <footer style={{ fontSize: 13, color: "#475569", display: "flex", gap: 16 }}>
-            <span>Trace IDs: {metrics.traceIds.length ? metrics.traceIds.join(", ") : "-"}</span>
+            <span>
+              {t(locale, "trace_links")}:{" "}
+              {metrics.traceIds.length
+                ? metrics.traceIds.map((traceId) => (
+                    <a
+                      key={traceId}
+                      href={`${jaegerBase}/search?service=overhearops&tags=%7B%22trace_id%22%3A%22${encodeURIComponent(traceId)}%22%7D`}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ marginRight: 8 }}
+                    >
+                      {traceId}
+                    </a>
+                  ))
+                : "-"}
+            </span>
             <span>Branches observed: {branchCount}</span>
             <span>Replay hash: {replayHash || "pending"}</span>
           </footer>
@@ -251,7 +284,21 @@ export default function RunPage({ params }: { params: { id: string } }) {
           <dt>Provider</dt>
           <dd>{data?.provider ?? "offline"} ({data?.mode ?? "offline"})</dd>
           <dt>Trace IDs</dt>
-          <dd>{metrics.traceIds.length ? metrics.traceIds.join(", ") : "-"}</dd>
+          <dd>
+            {metrics.traceIds.length
+              ? metrics.traceIds.map((traceId) => (
+                  <a
+                    key={traceId}
+                    href={`${jaegerBase}/search?service=overhearops&tags=%7B%22trace_id%22%3A%22${encodeURIComponent(traceId)}%22%7D`}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{ marginRight: 8 }}
+                  >
+                    {traceId}
+                  </a>
+                ))
+              : "-"}
+          </dd>
           <dt>Branch count</dt>
           <dd>{branchCount}</dd>
           <dt>Replay hash</dt>

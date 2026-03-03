@@ -1,13 +1,14 @@
 import shutil
 
+import pytest
 from fastapi.testclient import TestClient
 
 from apps.service import main
 
 
-def test_determinism_offline(monkeypatch):
-    values = [1000.0, 1001.0]
-    calls = {"count": 0}
+def test_determinism_offline(monkeypatch: pytest.MonkeyPatch) -> None:
+    values: list[float] = [1000.0, 1001.0]
+    calls: dict[str, int] = {"count": 0}
 
     def fake_time() -> float:
         idx = calls["count"]
@@ -17,7 +18,7 @@ def test_determinism_offline(monkeypatch):
         return values[-1]
 
     for value in values:
-        run_id = f"{main.ADAPTER_MODE}-ci_flake-{int(value)}"
+        run_id = f"{main.ADAPTER_MODE}-ci_flake-{int(value * 1000)}"
         target = main.RUNS / run_id
         if target.exists():
             shutil.rmtree(target)

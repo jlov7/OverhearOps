@@ -34,7 +34,6 @@ prerelease = "allow"
 
 [tool.pytest.ini_options]
 addopts = "-ra"
-asyncio_mode = "auto"
 testpaths = ["tests"]
 
 [tool.ruff]

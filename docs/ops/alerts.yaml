@@ -1,0 +1,26 @@
+alerts:
+  - name: api_availability_fast_burn
+    metric: api_availability_5m
+    condition: "< 99.0"
+    for: 10m
+    severity: critical
+  - name: api_availability_slow_burn
+    metric: api_availability_1h
+    condition: "< 99.9"
+    for: 1h
+    severity: warning
+  - name: run_failure_rate_high
+    metric: run_failure_rate_15m
+    condition: "> 0.05"
+    for: 15m
+    severity: critical
+  - name: queue_stall_detected
+    metric: queue_oldest_queued_age_s
+    condition: "> 300"
+    for: 10m
+    severity: warning
+  - name: dlq_growth_spike
+    metric: dlq_items_total_delta_1h
+    condition: "> 20"
+    for: 15m
+    severity: critical

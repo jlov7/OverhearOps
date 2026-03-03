@@ -43,7 +43,7 @@ class State(TypedDict, total=False):
 ```
 
 ## Components
-- **apps/service:** FastAPI app exposing health, WebSocket stream, `POST /run/{thread}` trigger, and `GET /runs/{id}` retrieval. Persists artefacts under `runs/` and pipes spans to OTEL.
+- **apps/service:** FastAPI app exposing health/probe endpoints, WebSocket stream, synchronous `POST /run/{thread}`, lifecycle `POST /runs` + `GET /runs/{id}/status` + `POST /runs/{id}/cancel`, replay controls (`GET /runs/dlq`, `POST /runs/{id}/replay`), approval/ship controls (`POST /runs/{id}/approve`, `GET /runs/{id}/approvals`, `POST /runs/{id}/ship`), simulation (`POST /runs/{id}/simulate`), history/search/export/compare endpoints, usage and analytics endpoints, admin settings/prompt/policy controls, DSR skeletons (`GET/POST /tenants/{tenant}/dsr/*`), and versioned API aliases under `/api/v1/*`. Persists status + artefacts under `runs/`, uses SQLite queue durability, supports API-key auth/RBAC/tenant scoping, and pipes spans to OTEL.
 - **packages/agentkit:** LangGraph 1.0 StateGraph nodes (overhear intent detection, AgentInit-inspired team composer, planner, executor, judge, uncertainty gate).
 - **packages/obs:** Observability helpers (OTEL bootstrap, dual exporter writing OTLP + local `spans.jsonl`, span-to-graph builder, defence heuristics) citing LangSmith/Langfuse integrations.
 - **apps/ui:** Next.js App Router UI mirroring Adaptive Cards <=1.5. Streams the Teams-style thread, renders Cytoscape span graph, ribbons, and governance modal.
@@ -65,10 +65,12 @@ class State(TypedDict, total=False):
 
 ## Deployment notes
 - Python 3.12 managed via `uv`; Node 20 for UI runtime.
-- Environment variables documented in `.env.example` (OTEL endpoint, DB path, thresholds).
+- Environment variables documented in `.env.example` (OTEL endpoint, DB path, thresholds, provider + Graph settings).
 - SQLite checkpointer default path `overhearops.db`; override with `OVERHEAROPS_DB` or env for tests.
 - Container-friendly: run `task dev` (starts collector via Docker Compose, backend via uvicorn, UI via npm).
-- Future integrations: Microsoft Graph adapter, LangSmith/Langfuse OTEL exporters, governance modal with span IDs.
+- Integrations: Microsoft Graph adapter (credential scopes + shared retry/circuit policy), LangSmith/Langfuse OTEL exporters, governance modal with span IDs.
+- Persisted run/status/approval JSON now flows through a codec abstraction (`apps/service/storage_codec.py`) with key-rotation metadata hooks.
+- Runtime policy/config surfaces are externalized to `config/runtime_settings.json`, `config/prompt_registry.json`, and `config/policy_rules.json`.
 
 ## Adapter seam
 ```mermaid
@@ -76,15 +78,16 @@ flowchart LR
     UI[Next.js UI] -->|REST/WebSocket| API
     Playground[Agents Playground] -->|Adaptive Card| API
     API -- ADAPTER=demo --> Demo[NDJSON demo adapter]
-    API -- ADAPTER=graph --> Graph[Teams Graph stub]
+    API -- ADAPTER=graph --> Graph[Teams Graph adapter]
     API -- ADAPTER=playground --> Exporter[Plan card exporter]
     Demo --> Threads[data/demo/threads]
-    Graph --> "(future) Microsoft Graph"
+    Graph --> "Microsoft Graph API"
 ```
-Runtime selection happens via the `ADAPTER` environment variable. `graph` mode validates credentials and otherwise raises a clear error, keeping the seam ready for future wiring whilst demo and playground remain credential-free.
+Runtime selection happens via the `ADAPTER` environment variable. `graph` mode uses OAuth2 client credentials and supports `team_id:channel_id` or `chat:chat_id` targets; demo and playground remain credential-free.
 
 ## Governance & replay
 - Each run sets `OVERHEAROPS_RUN_ID`, enabling the file exporter to append spans and the service to calculate a replay hash.
 - The governance modal surfaces trace IDs, branch counts, and the reproduce command (`uv run apps/service/replay.py --thread ci_flake --seed 42`).
 - Determinism is enforced by hashing `(span_id, name, start_ts, end_ts)` and storing the value in `runs/{id}/hash.txt`.
 - The uncertainty gate implements an abstain policy: low-confidence verdicts prevent artefact shipment and surface a blocked banner in the UI.
+- Run lifecycle now includes `cancel_requested`, `cancelled`, and `timed_out` status paths with audit-log records, plus queue-backed DLQ replay and approval-gated live shipping.

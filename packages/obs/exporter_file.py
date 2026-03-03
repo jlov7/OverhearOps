@@ -4,16 +4,19 @@ from __future__ import annotations
 
 import json
 import os
+from collections.abc import Sequence
 from pathlib import Path
 
+from opentelemetry.sdk.trace import ReadableSpan
 from opentelemetry.sdk.trace.export import SpanExporter, SpanExportResult
 
 from packages.obs.runtime import get_run_context
 
+
 class FileSpanExporter(SpanExporter):
     """Append spans for the active run to `runs/{id}/spans.jsonl`."""
 
-    def export(self, spans):  # type: ignore[override]
+    def export(self, spans: Sequence[ReadableSpan]) -> SpanExportResult:
         run_id = get_run_context().run_id or os.getenv("OVERHEAROPS_RUN_ID")
         if not run_id:
             return SpanExportResult.SUCCESS

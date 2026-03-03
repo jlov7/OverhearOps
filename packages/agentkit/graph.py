@@ -14,7 +14,7 @@ from opentelemetry import trace
 from opentelemetry.trace import Span
 
 from packages.agentkit.agentinit import compose_team
-from packages.agentkit.executor import exec_all_plans, try_patch_or_issue
+from packages.agentkit.executor import exec_all_plans
 from packages.agentkit.judge import multi_agent_judge
 from packages.agentkit.overhear import detect_intents_from_stream
 from packages.agentkit.planner import fork_plans
@@ -33,6 +33,7 @@ class State(TypedDict, total=False):
     branches: list[dict[str, Any]]
     verdict: dict[str, Any]
     artefacts: dict[str, Any]
+    artefacts_by_plan: dict[str, Any]
     risk: dict[str, Any]
     team: list[dict[str, Any]]
 
@@ -97,6 +98,7 @@ def spanify(name: str) -> Callable[[StateCallable], StateCallable]:
 
     return decorator
 
+
 @spanify("overhear")
 def node_overhear(state: State) -> State:
     body = state.get("msg", {}).get("body", {})
@@ -141,12 +143,21 @@ def node_gate(state: State) -> State:
 
 @spanify("ship")
 def node_ship(state: State) -> State:
-    verdict = state.get("verdict", {})
-    artefacts_by_plan = state.get("artefacts_by_plan", {})
-    winner_id = verdict.get("winner_plan_id") or verdict.get("winner", {}).get("plan", {}).get("id")
-    if verdict.get("action") != "approve":
+    verdict = state.get("verdict")
+    verdict_payload = verdict if isinstance(verdict, dict) else {}
+    artefacts_by_plan = state.get("artefacts_by_plan")
+    artefacts_by_plan_payload = (
+        artefacts_by_plan if isinstance(artefacts_by_plan, dict) else {}
+    )
+    winner = verdict_payload.get("winner")
+    winner_payload = winner if isinstance(winner, dict) else {}
+    winner_plan = winner_payload.get("plan")
+    winner_plan_payload = winner_plan if isinstance(winner_plan, dict) else {}
+    winner_id = verdict_payload.get("winner_plan_id") or winner_plan_payload.get("id")
+    winner_key = str(winner_id) if winner_id is not None else ""
+    if verdict_payload.get("action") != "approve":
         return {**state, "artefacts": {"blocked": True, "reason": "abstain"}}
-    return {**state, "artefacts": artefacts_by_plan.get(winner_id, {})}
+    return {**state, "artefacts": artefacts_by_plan_payload.get(winner_key, {})}
 
 
 def build_graph(db_url: str = "overhearops.db"):
