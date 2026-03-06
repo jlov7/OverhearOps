@@ -1,7 +1,7 @@
 """Simple SQLite-backed checkpoint saver bridging LangGraph and replay needs."""
 from __future__ import annotations
 
-import pickle
+import pickle  # nosec B403
 import sqlite3
 import threading
 from collections import defaultdict
@@ -42,7 +42,8 @@ class SqliteBackedSaver(InMemorySaver):
             "writes": self._to_plain(self.writes),
             "blobs": self._to_plain(self.blobs),
         }
-        blob = pickle.dumps(payload)  # noqa: S301 - local persistence
+        # Checkpoint blobs are persisted locally and never loaded from user input.
+        blob = pickle.dumps(payload)  # nosec B301
         with self._lock:
             with self._conn:
                 self._conn.execute(
@@ -55,7 +56,8 @@ class SqliteBackedSaver(InMemorySaver):
         row = cur.fetchone()
         if row is None:
             return
-        payload = pickle.loads(row[0])  # noqa: S301 - local persistence
+        # Only locally persisted checkpoint rows are deserialized here.
+        payload = pickle.loads(row[0])  # nosec B301
         self._rehydrate(payload)
 
     def _to_plain(self, value: Any) -> Any:

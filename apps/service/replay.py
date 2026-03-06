@@ -32,7 +32,8 @@ class ReplayScheduler:
         self.thread_id = thread_id
         self.speed = speed
         self.jitter = jitter
-        self.rng = random.Random(seed)  # noqa: S311 - deterministic demo RNG
+        # Deterministic replay uses a seeded non-cryptographic RNG by design.
+        self.rng = random.Random(seed)  # nosec B311
 
     @staticmethod
     def _parse_ts(timestamp: str) -> datetime:
