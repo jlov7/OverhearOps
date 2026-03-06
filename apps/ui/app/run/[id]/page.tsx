@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { use, useEffect, useMemo, useState } from "react";
 
 import Graph from "../../../components/Graph";
 import Modal from "../../../components/Modal";
@@ -33,8 +33,8 @@ type GraphPayload = {
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
 
-export default function RunPage({ params }: { params: { id: string } }) {
-  const runId = decodeURIComponent(params.id);
+export default function RunPage({ params }: { params: Promise<{ id: string }> }) {
+  const runId = decodeURIComponent(use(params).id);
   const [data, setData] = useState<RunPayload | null>(null);
   const [graphs, setGraphs] = useState<GraphPayload | null>(null);
   const [loading, setLoading] = useState<boolean>(true);

@@ -32,7 +32,7 @@ jobs:
         run: pip-audit
 
       - name: Node dependency audit
-        run: npm audit --audit-level=high --prefix apps/ui
+        run: npm audit --audit-level=high
 
       - name: Secret scan (gitleaks)
         uses: gitleaks/gitleaks-action@v2
