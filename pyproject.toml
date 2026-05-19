@@ -15,7 +15,7 @@ dependencies = [
   "pytest>=8.3",
   "ruff>=0.6.4",
   "mypy>=1.11",
-  "python-dotenv>=1.0",
+  "python-dotenv>=1.2.2",
   "orjson>=3.10",
   "honcho>=1.1.0",
 ]
